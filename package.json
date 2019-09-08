@@ -1,0 +1,44 @@
+{
+  "name": "win-sso",
+  "version": "0.1.0",
+  "description": "NTLM single-sign-on for Node.js",
+  "main": "index.js",
+  "scripts": {
+    "build": "shx rm -rf dist && tsc && shx cp src/index.d.ts dist/",
+    "prepare": "npm run build",
+    "lint": "tslint --project .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bjowes/node-win-sso.git"
+  },
+  "keywords": [
+    "NTLM",
+    "Windows Authentication",
+    "Single sign on"
+  ],
+  "author": "Björn Weström",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bjowes/node-win-sso/issues"
+  },
+  "homepage": "https://github.com/bjowes/node-win-sso#readme",
+  "dependencies": {
+    "@types/debug": "^4.1.5",
+    "ffi": "^2.3.0",
+    "ref-struct": "^1.1.0"
+  },
+  "devDependencies": {
+    "@types/ffi": "^0.2.2",
+    "@types/node": "^12.7.3",
+    "@types/ref": "0.0.28",
+    "@types/ref-struct": "0.0.29",
+    "shx": "^0.3.2",
+    "ts-node": "^8.3.0",
+    "tslint": "^5.19.0",
+    "tslint-eslint-rules": "^5.4.0",
+    "typescript": "^3.6.2",
+    "vrsource-tslint-rules": "^6.0.0"
+  }
+}

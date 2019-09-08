@@ -59,3 +59,15 @@ typings/
 
 # next.js build output
 .next
+
+# Bundle
+dist/
+
+# Typescript build
+build/
+
+# VS Code
+.vscode/
+
+# PoC file
+src/try.js
