@@ -2,7 +2,7 @@
   "name": "win-sso",
   "version": "0.1.0",
   "description": "NTLM single-sign-on for Node.js",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "build": "shx rm -rf dist && tsc && shx cp src/index.d.ts dist/",
     "prepare": "npm run build",
@@ -17,6 +17,9 @@
     "NTLM",
     "Windows Authentication",
     "Single sign on"
+  ],
+  "files": [
+    "dist/"
   ],
   "author": "Björn Weström",
   "license": "MIT",
