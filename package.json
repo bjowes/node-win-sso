@@ -4,7 +4,7 @@
   "description": "NTLM single-sign-on for Node.js",
   "main": "dist/index.js",
   "scripts": {
-    "build": "shx rm -rf dist && tsc && shx cp src/index.d.ts dist/",
+    "build": "shx rm -rf dist && tsc",
     "prepare": "npm run build",
     "lint": "tslint --project .",
     "test": "echo \"Error: no test specified\" && exit 1"
