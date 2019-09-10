@@ -140,13 +140,14 @@ export class WinSso {
     debug('Acquired Credentials handle:', this.credHandle);
   }
 
-  private initializeCredentialsHandle(inSecBufferDesc: any): InitializeSecurityContextA_Result {
+  private initializeCredentialsHandle(inSecBufferDesc: any, targetHost: string): InitializeSecurityContextA_Result {
     let result = 0;
+    let spn = ref.allocCString('http/' + targetHost, 'ascii');
     if (inSecBufferDesc === undefined) {
       result = Secur.InitializeSecurityContextA(
         this.credHandle.ref(),
         ref.NULL,
-        this.securityPackageName,
+        spn,
         SecurConst.ISC_REQ_CONFIDENTIALITY,
         0,
         SecurConst.SECURITY_NATIVE_DREP,
@@ -161,7 +162,7 @@ export class WinSso {
       result = Secur.InitializeSecurityContextA(
         this.credHandle.ref(),
         this.ctxHandle.ref(),
-        this.securityPackageName,
+        spn,
         ref.deref(this.ctxAttributesRef),
         0,
         SecurConst.SECURITY_NATIVE_DREP,
@@ -206,12 +207,14 @@ export class WinSso {
    * Creates a NTLM type 1 authentication token
    * This allocates unmanaged memory buffers, the destroy method must be called
    * to free them (on error or after authentication is completed)
+   * @param targetHost {string} The FQDN hostname of the target
    * @returns {Buffer} Raw token buffer
    */
-  createAuthRequest(): Buffer {
+  createAuthRequest(targetHost: string): Buffer {
     this.acquireCredentialsHandle();
-    this.initializeCredentialsHandle(undefined);
+    this.initializeCredentialsHandle(undefined, targetHost);
     let token = this.outToken.slice(0, this.getSecBufferLength(this.outSecBufferDesc));
+    debug('Created NTLM type 1 token', token.toString('base64'));
     return token;
   }
 
@@ -219,20 +222,21 @@ export class WinSso {
    * Creates a NTLM type 1 www-authentication header (Authentication Request).
    * This allocates unmanaged memory buffers, the destroy method must be called
    * to free them (on error or after authentication is completed)
+   * @param targetHost {string} The FQDN hostname of the target
    * @returns {string} The NTLM type 1 header
    */
-  createAuthRequestHeader(): string {
-    let header = 'NTLM ' + this.createAuthRequest().toString('base64');
-    debug('Created NTLM type 1', header);
+  createAuthRequestHeader(targetHost: string): string {
+    let header = 'NTLM ' + this.createAuthRequest(targetHost).toString('base64');
     return header;
   }
 
   /**
    * Creates a NTLM type 3 authentication token
    * @param inTokenHeader {string} The www-authentication header received from the target (NTLM type 2 token)
+   * @param targetHost {string} The FQDN hostname of the target
    * @returns {Buffer} Raw token buffer
    */
-  createAuthResponse(inTokenHeader: string): Buffer {
+  createAuthResponse(inTokenHeader: string, targetHost: string): Buffer {
     debug('Received NTLM type 2', inTokenHeader);
     let ntlmMatch = /^NTLM ([^,\s]+)/.exec(inTokenHeader);
 
@@ -249,22 +253,23 @@ export class WinSso {
         this.createSecBufferDesc(this.outToken, this.maxTokenLength);
 
     let inSecBufferDesc = this.createSecBufferDesc(inToken, inToken.length);
-    let result = this.initializeCredentialsHandle(inSecBufferDesc);
+    let result = this.initializeCredentialsHandle(inSecBufferDesc, targetHost);
     if (result !== InitializeSecurityContextA_Result.OK) {
       throw new Error('Unexpected return code from InitializeCredentialsHandleA when generating type 3 message:' + result.toString(16));
     }
     let token = this.outToken.slice(0, this.getSecBufferLength(this.outSecBufferDesc));
+    debug('Created NTLM type 3 token', token.toString('base64'));
     return token;
   }
 
   /**
    * Creates a NTLM type 3 www-authentication header (Challenge Response)
    * @param inTokenHeader {string} The www-authentication header received from the target (NTLM type 2 token)
+   * @param targetHost {string} The FQDN hostname of the target
    * @returns {string} The NTLM type 3 header
    */
-  createAuthResponseHeader(inTokenHeader: string): string {
-    let header = 'NTLM ' + this.createAuthResponse(inTokenHeader).toString('base64');
-    debug('Created NTLM type 3', header);
+  createAuthResponseHeader(inTokenHeader: string, targetHost: string): string {
+    let header = 'NTLM ' + this.createAuthResponse(inTokenHeader, targetHost).toString('base64');
     return header;
   }
 
