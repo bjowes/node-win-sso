@@ -1,4 +1,4 @@
-import * as ref from 'ref';
+import * as ref from 'ref-napi';
 import { TimeStamp, SecWinNtAuthIdentity, CredHandle, SecPkgInfoA, SecHandle, SecBufferDesc } from './structs';
 
 export const Types = {

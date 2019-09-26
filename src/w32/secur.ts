@@ -3,7 +3,7 @@
 
 'use strict';
 
-import * as ffi from 'ffi';
+import * as ffi from 'ffi-napi';
 import { Types } from './types';
 
 export const SecurConst = {
@@ -18,6 +18,9 @@ export const SecurConst = {
   SECURITY_NATIVE_DREP: 0x10,
 
   SECBUFFER_TOKEN: 2,
+  SECBUFFER_CHANNEL_BINDINGS: 14,
+
+  SECPKG_ATTR_ENDPOINT_BINDINGS: 26
 };
 
 export enum InitializeSecurityContextA_Result {
@@ -106,6 +109,12 @@ export const Secur = ffi.Library('Secur32', {
       PCtxtHandle phContext
     );
     */
-    DeleteSecurityContext: [Types.LONG, [Types.PSEC_HANDLE]]
-
+    DeleteSecurityContext: [Types.LONG, [Types.PSEC_HANDLE]],
+    /* SECURITY_STATUS SEC_ENTRY QueryContextAttributesA(
+      PCtxtHandle phContext,
+      ULONG ulAttribute,
+      void* pBuffer
+    );
+    */
+    QueryContextAttributesA: [Types.LONG, [Types.PSEC_HANDLE, Types.ULONG, Types.PVOID]]
 });
