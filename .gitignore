@@ -70,4 +70,4 @@ build/
 .vscode/
 
 # PoC file
-src/try.js
+test/try.ts
