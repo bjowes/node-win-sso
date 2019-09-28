@@ -71,3 +71,4 @@ build/
 
 # PoC file
 test/try.ts
+test/execution-time.js
