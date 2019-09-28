@@ -23,7 +23,8 @@
   "files": [
     "dist/",
     "install.js",
-    "binding.gyp"
+    "binding.gyp",
+    "src/node-addon/"
   ],
   "author": "Björn Weström",
   "license": "MIT",
