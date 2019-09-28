@@ -22,7 +22,8 @@
   ],
   "files": [
     "dist/",
-    "install.js"
+    "install.js",
+    "binding.gyp"
   ],
   "author": "Björn Weström",
   "license": "MIT",

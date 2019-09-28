@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.4 - released 2019-09-28
+
+* Fixed npm package contents
+
 ## 0.2.3 - released 2019-09-28
 
 * Fixed npm package contents
