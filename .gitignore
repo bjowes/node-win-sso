@@ -70,4 +70,5 @@ build/
 .vscode/
 
 # PoC file
-src/try.js
+test/try.ts
+test/execution-time.js
