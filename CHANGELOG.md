@@ -5,6 +5,6 @@
 * Added graceful failure on non-Windows OS
 * Documented API
 
-## 0.1.4 - released 2019-09-27
+## 0.2.0 - released 2019-09-27
 
 * First functional release
