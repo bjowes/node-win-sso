@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.7 - released 2019-09-28
+
+* Include full source in npm to avoid quirky issues with rebuild of installed modules
+
 ## 0.2.6 - released 2019-09-28
 
 * More graceful failure on non-Window OS

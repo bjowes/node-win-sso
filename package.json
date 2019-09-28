@@ -24,7 +24,7 @@
     "dist/",
     "install.js",
     "binding.gyp",
-    "src/node-addon/"
+    "src/"
   ],
   "author": "Björn Weström",
   "license": "MIT",
