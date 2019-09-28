@@ -21,7 +21,8 @@
     "Single sign on"
   ],
   "files": [
-    "dist/"
+    "dist/",
+    "install.js"
   ],
   "author": "Björn Weström",
   "license": "MIT",
