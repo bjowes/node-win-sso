@@ -11,11 +11,11 @@ export class WinSso {
    * Retrieves the username of the logged in user
    * @returns {string} user name including domain
    */
-  getUserName(): string {
+  static getUserName(): string {
     return winSsoAddon.getUserName();
   }
 
-  private getChannelBindingsApplicationData(peerCert: PeerCertificate) {
+  private static getChannelBindingsApplicationData(peerCert: PeerCertificate) {
     let cert: any = peerCert;
     let hash = cert.fingerprint256.replace(/:/g, '');
     let hashBuf = Buffer.from(hash, 'hex');
@@ -32,7 +32,7 @@ export class WinSso {
    * to free them (on error or after authentication is completed)
    * @returns {Buffer} Raw token buffer
    */
-  createAuthRequest(): Buffer {
+  static createAuthRequest(): Buffer {
     let token = winSsoAddon.createAuthRequest();
     debug('Created NTLM type 1 token', token.toString('base64'));
     return token;
@@ -44,7 +44,7 @@ export class WinSso {
    * to free them (on error or after authentication is completed)
    * @returns {string} The NTLM type 1 header
    */
-  createAuthRequestHeader(): string {
+  static createAuthRequestHeader(): string {
     let header = 'NTLM ' + this.createAuthRequest().toString('base64');
     return header;
   }
@@ -56,7 +56,7 @@ export class WinSso {
    * @param peerCert {PeerCertificate | undefined} The certificate of the target server (optional, for HTTPS channel binding)
    * @returns {Buffer} Raw token buffer
    */
-  createAuthResponse(inTokenHeader: string, targetHost: string, peerCert: PeerCertificate | undefined): Buffer {
+  static createAuthResponse(inTokenHeader: string, targetHost: string, peerCert: PeerCertificate | undefined): Buffer {
     debug('Received NTLM type 2', inTokenHeader);
     let ntlmMatch = /^NTLM ([^,\s]+)/.exec(inTokenHeader);
 
@@ -85,7 +85,7 @@ export class WinSso {
    * @param peerCert {PeerCertificate | undefined} The certificate of the target server (optional, for HTTPS channel binding)
    * @returns {string} The NTLM type 3 header
    */
-  createAuthResponseHeader(inTokenHeader: string, targetHost: string, peerCert: PeerCertificate | undefined): string {
+  static createAuthResponseHeader(inTokenHeader: string, targetHost: string, peerCert: PeerCertificate | undefined): string {
     let header = 'NTLM ' + this.createAuthResponse(inTokenHeader, targetHost, peerCert).toString('base64');
     return header;
   }

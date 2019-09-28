@@ -22,6 +22,8 @@ Usage of this module requires some knowledge of the NTLM handshake process. Ther
 
 _Example code of a full handshake will be provided later_
 
+The WinSso class is stateless and all methods are static. No manual cleanup required.
+
 ### osSupported(): boolean
 
 Utility function to simplify the case where an application supports multiple platforms, but NTLM single-sign-on is only supported on Windows OSs. Returns true if the platform is win32. If this returns false, all the methods below will throw.
