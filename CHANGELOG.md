@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.6 - released 2019-09-28
+
+* More graceful failure on non-Window OS
+
 ## 0.2.5 - released 2019-09-28
 
 * Fixed npm package contents

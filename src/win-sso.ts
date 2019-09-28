@@ -1,6 +1,13 @@
 import { debug } from './utils/debug.logger';
 import { PeerCertificate } from 'tls';
-const winSsoAddon = require('bindings')('win-sso');
+
+let winSsoAddon: any;
+try {
+  winSsoAddon = require('bindings')('win-sso');
+  debug('Loaded win-sso native module');
+} catch (err) {
+  debug('Could not load win-sso native module');
+}
 
 /**
  * Creates authentication tokens for NTLM handshake using the executing users credentials.
