@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.8 - released 2019-09-29
+
+* Added prebuild on Win30 through Appveyor
+
 ## 0.2.7 - released 2019-09-28
 
 * Include full source in npm to avoid quirky issues with rebuild of installed modules
