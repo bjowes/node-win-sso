@@ -1,8 +1,12 @@
 # Changelog
 
+## 0.2.13 - released 2019-09-29
+
+* Graceful handling of prebuilds on non-Windows OS
+
 ## 0.2.12 - released 2019-09-29
 
-* Completed with prebuilt native modules
+* Prebuild functional
 
 ## 0.2.8 - 0.2.11 - released 2019-09-29
 
