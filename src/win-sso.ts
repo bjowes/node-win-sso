@@ -1,9 +1,10 @@
 import { debug } from './utils/debug.logger';
 import { PeerCertificate } from 'tls';
+import path from 'path';
 
 let winSsoAddon: any;
 try {
-  winSsoAddon = require('node-gyp-build')(__dirname);
+  winSsoAddon = require('node-gyp-build')(path.join(__dirname, '..'));
   debug('Loaded win-sso native module');
 } catch (err) {
   debug('Could not load win-sso native module');
