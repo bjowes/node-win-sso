@@ -7,7 +7,7 @@
     "build": "shx rm -rf dist && tsc",
     "prepare": "npm run build",
     "lint": "tslint --project .",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha --require ./test/ts.hooks.js test/**/*.spec.ts",
     "prebuild": "prebuildify --napi --strip",
     "native_build": "node-gyp-build",
     "install": "node install.js"
@@ -41,8 +41,12 @@
     "node-gyp-build": "^4.1.1"
   },
   "devDependencies": {
+    "@types/chai": "^4.2.3",
     "@types/debug": "^4.1.5",
+    "@types/mocha": "^5.2.7",
     "@types/node": "^12.7.3",
+    "chai": "^4.2.0",
+    "mocha": "^6.2.1",
     "prebuildify": "^3.0.4",
     "shx": "^0.3.2",
     "ts-node": "^8.3.0",
