@@ -8,7 +8,7 @@ platform:
   - x86
   - x64
 install:
-  - SET PATH=C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\VC\\bin;%PATH%
+  - SET PATH=C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin;%PATH%
   - ps: Install-Product node $env:nodejs_version $env:platform
   - npm install
 test_script:
@@ -23,7 +23,7 @@ artifacts:
     type: zip
 deploy:
   - provider: GitHub
-    artifact: /.*\\.zip/
+    artifact: /.*\.zip/
     draft: false
     prerelease: true
     auth_token:
