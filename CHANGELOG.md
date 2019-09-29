@@ -1,8 +1,13 @@
 # Changelog
 
-## 0.2.8 - released 2019-09-29
+## 0.2.12 - released 2019-09-29
 
-* Added prebuild on Win30 through Appveyor
+* Completed with prebuilt native modules
+
+## 0.2.8 - 0.2.11 - released 2019-09-29
+
+* Attempts to added prebuild on Win32 through Appveyor
+* First unit tests
 
 ## 0.2.7 - released 2019-09-28
 
