@@ -8,7 +8,7 @@
     "prepare": "npm run build",
     "lint": "tslint --project .",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prebuild": "prebuildify --strip",
+    "prebuild": "prebuildify --napi --strip",
     "native_build": "node-gyp-build",
     "install": "node install.js"
   },
