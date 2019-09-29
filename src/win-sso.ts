@@ -3,7 +3,7 @@ import { PeerCertificate } from 'tls';
 
 let winSsoAddon: any;
 try {
-  winSsoAddon = require('bindings')('win-sso');
+  winSsoAddon = require('node-gyp-build')(__dirname);
   debug('Loaded win-sso native module');
 } catch (err) {
   debug('Could not load win-sso native module');
