@@ -26,7 +26,8 @@
     "dist/",
     "install.js",
     "binding.gyp",
-    "src/"
+    "src/",
+    "prebuilds/"
   ],
   "author": "Björn Weström",
   "license": "MIT",
