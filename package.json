@@ -8,10 +8,10 @@
     "prepare": "npm run build",
     "lint": "tslint --project .",
     "test": "mocha --require ./test/ts.hooks.js test/**/*.spec.ts",
-    "prebuildify_env_check": "node prebuildify.js",
+    "prebuildify": "node prebuildify_env.js",
     "native_prebuildify": "prebuildify --napi --strip",
     "native_build": "node-gyp-build",
-    "install": "node install.js"
+    "install": "node install_env.js"
   },
   "repository": {
     "type": "git",
