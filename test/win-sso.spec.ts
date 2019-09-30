@@ -158,7 +158,9 @@ describe('WinSso', function() {
       let token = WinSso.createAuthResponse(type2MessageHeader, targetHost, undefined);
 
       // Assert
-      chai.expect(result.substring(5)).to.equal(token.toString('base64'));
+      // Since the token will contain unique challenge and timestamp values the two calls
+      // won't be completely identical. Just check the first 64 base64 characters.
+      chai.expect(result.substring(5, 5+64)).to.equal(token.toString('base64').substring(0,64));
     });
   });
 });
