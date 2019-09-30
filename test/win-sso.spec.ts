@@ -72,7 +72,7 @@ describe('WinSso', function() {
       let token = WinSso.createAuthRequest();
 
       // Assert
-      chai.expect(result.substring(5)).to.equal(token);
+      chai.expect(result.substring(5)).to.equal(token.toString('base64'));
     });
   });
 
@@ -100,6 +100,22 @@ describe('WinSso', function() {
     it('should provide a NTLM type 3 message', function() {
       // Act
       let result = WinSso.createAuthResponse(type2MessageHeader, targetHost, undefined);
+
+      // Assert
+      let base64tokenHeader = result.slice(0,12).toString('base64');
+      let expectType1Header = Buffer.from("NTLMSSP\0\x03\x00\x00\x00").toString('base64');
+      chai.expect(base64tokenHeader).to.equal(expectType1Header);
+    });
+
+    it('should provide a NTLM type 3 message when passed a PeerCertificate', function() {
+      // Arrange
+      let fingerprint = '00:11:22:33:44:55:66:77:88:99:AA:BB:CC:DD:EE:FF';
+      let fakeCert: any = {
+        fingerprint256: fingerprint
+      };
+
+      // Act
+      let result = WinSso.createAuthResponse(type2MessageHeader, targetHost, fakeCert);
 
       // Assert
       let base64tokenHeader = result.slice(0,12).toString('base64');
@@ -142,7 +158,7 @@ describe('WinSso', function() {
       let token = WinSso.createAuthResponse(type2MessageHeader, targetHost, undefined);
 
       // Assert
-      chai.expect(result.substring(5)).to.equal(token);
+      chai.expect(result.substring(5)).to.equal(token.toString('base64'));
     });
   });
 });
