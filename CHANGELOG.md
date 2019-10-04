@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.14 - released 2019-10-04
+
+* Accept undefined targetHost in createAuthResponse and createAuthResponseHeader
+  
 ## 0.2.13 - released 2019-09-29
 
 * Graceful handling of prebuilds on non-Windows OS
