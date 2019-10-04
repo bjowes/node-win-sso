@@ -60,11 +60,11 @@ export class WinSso {
   /**
    * Creates a NTLM type 3 authentication token
    * @param inTokenHeader {string} The www-authentication header received from the target (NTLM type 2 token)
-   * @param targetHost {string} The FQDN hostname of the target
+   * @param targetHost {string | undefind} The FQDN hostname of the target (optional)
    * @param peerCert {PeerCertificate | undefined} The certificate of the target server (optional, for HTTPS channel binding)
    * @returns {Buffer} Raw token buffer
    */
-  static createAuthResponse(inTokenHeader: string, targetHost: string, peerCert: PeerCertificate | undefined): Buffer {
+  static createAuthResponse(inTokenHeader: string, targetHost: string | undefined, peerCert: PeerCertificate | undefined): Buffer {
     debug('Received NTLM type 2', inTokenHeader);
     let ntlmMatch = /^NTLM ([^,\s]+)/.exec(inTokenHeader);
 
@@ -89,11 +89,11 @@ export class WinSso {
   /**
    * Creates a NTLM type 3 www-authentication header (Challenge Response)
    * @param inTokenHeader {string} The www-authentication header received from the target (NTLM type 2 token)
-   * @param targetHost {string} The FQDN hostname of the target
+   * @param targetHost {string | undefined} The FQDN hostname of the target (optional)
    * @param peerCert {PeerCertificate | undefined} The certificate of the target server (optional, for HTTPS channel binding)
    * @returns {string} The NTLM type 3 header
    */
-  static createAuthResponseHeader(inTokenHeader: string, targetHost: string, peerCert: PeerCertificate | undefined): string {
+  static createAuthResponseHeader(inTokenHeader: string, targetHost: string | undefined, peerCert: PeerCertificate | undefined): string {
     let header = 'NTLM ' + this.createAuthResponse(inTokenHeader, targetHost, peerCert).toString('base64');
     return header;
   }

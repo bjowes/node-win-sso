@@ -73,7 +73,7 @@ namespace WinSso {
   int InitializeSecurityContext(
     SecBufferDesc* inSecBufferDesc,
     SecBufferDesc* outSecBufferDesc,
-    std::string targetHost,
+    std::string* targetHost,
     CredHandle* credHandle,
     struct _SecHandle* ctxHandle,
     unsigned long* ctxAttributes,
@@ -97,11 +97,15 @@ namespace WinSso {
         lifeTime
       );
     } else {
-      std::string spn = "HTTP/" + targetHost;
+      char* spn = NULL;
+      if (targetHost != NULL) {
+        std::string spnPrep = "HTTP/" + *targetHost;
+        spn = (char*)spnPrep.c_str();
+      }
       result = InitializeSecurityContextA(
         credHandle,
         ctxHandle,
-        (char*)(spn.c_str()),
+        spn,
         *ctxAttributes,
         0,
         SECURITY_NATIVE_DREP,
