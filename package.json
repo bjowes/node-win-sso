@@ -24,7 +24,8 @@
   ],
   "files": [
     "dist/",
-    "install.js",
+    "install_env.js",
+    "prebuildify_env.js",
     "binding.gyp",
     "src/",
     "prebuilds/"

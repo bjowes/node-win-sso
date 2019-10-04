@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.15 - released 2019-10-04
+
+* Repair npm packaging
+
 ## 0.2.14 - released 2019-10-04
 
 * Accept undefined targetHost in createAuthResponse and createAuthResponseHeader
