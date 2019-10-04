@@ -69,6 +69,9 @@ build/
 # VS Code
 .vscode/
 
+# Prebuilds
+prebuilds/
+
 # PoC file
 test/try.ts
 test/execution-time.js

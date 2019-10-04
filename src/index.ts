@@ -1,3 +1,4 @@
 import { WinSso } from './win-sso';
+import { osSupported } from './os-supported';
 
-export { WinSso };
+export { WinSso, osSupported };
