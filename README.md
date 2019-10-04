@@ -40,21 +40,21 @@ Returns the Authentication Request token as a buffer. This is the NTLM type 1 me
 
 Returns the Authentication Request header as a string. This is the token returned by WinSso.createAuthRequest() encoded as Base64, prefixed with the string 'NTLM '. This is the expected format of the Authorization header in a http/https request to the target server to initiate the NTLM handshake.
 
-### WinSso.createAuthResponse(inTokenHeader: string, targetHost: string, peerCert: PeerCertificate | undefined): Buffer
+### WinSso.createAuthResponse(inTokenHeader: string, targetHost: string | undefined, peerCert: PeerCertificate | undefined): Buffer
 
 Returns the Authentication Response token as a buffer. This is the NTLM type 3 message.
 
 * inTokenHeader: The content of the 'www-authenticate' header in the response to the Authentication Request. It contains the NTLM type 2 message.
-* targetHost: The FQDN of the target host. This is used to build a SPN string in the NTLM message for enhanced security.
-* peerCert: If the connection is http, pass undefined. If the connection is https, pass the peer certificate to add Channel Binding to the NTLM message for enhanced security. This is optional.
+* targetHost (optional): The FQDN of the target host. This is used to build a SPN string in the NTLM message for enhanced security.
+* peerCert (optional): If the connection is http, pass undefined. If the connection is https, pass the peer certificate to add Channel Binding to the NTLM message for enhanced security.
 
-### WinSso.createAuthResponseHeader(inTokenHeader: string, targetHost: string, peerCert: PeerCertificate | undefined): string
+### WinSso.createAuthResponseHeader(inTokenHeader: string, targetHost: string | undefined, peerCert: PeerCertificate | undefined): string
 
 Returns the Authentication Response header as a string. This is the token returned by WinSso.createAuthResponse() encoded as Base64, prefixed with the string 'NTLM '. This is the expected format of the Authorization header in a http/https request to the target server to finalize the NTLM handshake.
 
 * inTokenHeader: The content of the 'www-authenticate' header in the response to the Authentication Request. It contains the NTLM type 2 message.
-* targetHost: The FQDN of the target host. This is used to build a SPN string in the NTLM message for enhanced security.
-* peerCert: If the connection is http, pass undefined. If the connection is https, pass the peer certificate to add Channel Binding to the NTLM message for enhanced security. This is optional.
+* targetHost (optional): The FQDN of the target host. This is used to build a SPN string in the NTLM message for enhanced security.
+* peerCert (optional): If the connection is http, pass undefined. If the connection is https, pass the peer certificate to add Channel Binding to the NTLM message for enhanced security.
 
 ### Limitations
 

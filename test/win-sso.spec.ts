@@ -123,6 +123,16 @@ describe('WinSso', function() {
       chai.expect(base64tokenHeader).to.equal(expectType1Header);
     });
 
+    it('should provide a NTLM type 3 message with undefined targetHost', function() {
+      // Act
+      let result = WinSso.createAuthResponse(type2MessageHeader, undefined, undefined);
+
+      // Assert
+      let base64tokenHeader = result.slice(0,12).toString('base64');
+      let expectType1Header = Buffer.from("NTLMSSP\0\x03\x00\x00\x00").toString('base64');
+      chai.expect(base64tokenHeader).to.equal(expectType1Header);
+    });
+
     it('should throw if inToken is not a NTLM type 2 message', function() {
       // Arrange
       let dummyToken = 'NOT NTLM AT ALL';
