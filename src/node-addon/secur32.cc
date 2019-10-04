@@ -9,7 +9,7 @@
 #include <string.h>
 
 namespace WinSso {
-  static char* _packageName = "NTLM";
+  static std::string _packageName = "NTLM";
 
   Napi::String GetUserName(const Napi::CallbackInfo& info) {
     static char _userName[256] = "";
@@ -38,7 +38,7 @@ namespace WinSso {
     }
 
     PSecPkgInfoA	  	pkgInfo;
-    int result = QuerySecurityPackageInfoA(_packageName, &pkgInfo);
+    int result = QuerySecurityPackageInfoA((char*)(_packageName.c_str()), &pkgInfo);
     if (result != 0) {
       Napi::Error::New(env, "Could not get SecurityPackageInfo").ThrowAsJavaScriptException();
       return 0;
@@ -53,7 +53,7 @@ namespace WinSso {
   }
 
   void AcquireCredentialsHandle(CredHandle* credHandle, SECURITY_INTEGER* lifeTime, Napi::Env& env) {
-    int result = AcquireCredentialsHandleA(NULL, _packageName, SECPKG_CRED_OUTBOUND, NULL, NULL, NULL, NULL, credHandle, lifeTime);
+    int result = AcquireCredentialsHandleA(NULL, (char*)(_packageName.c_str()), SECPKG_CRED_OUTBOUND, NULL, NULL, NULL, NULL, credHandle, lifeTime);
     if (result < 0) {
       std::string message = "Could not acquire credentials handle. Result: ";
       message += std::to_string(result);
@@ -146,7 +146,7 @@ namespace WinSso {
     SECURITY_INTEGER lifeTime;
     struct _SecHandle ctxHandle;
     unsigned long ctxAttributes = 0;
-    unsigned long maxTokenLength = GetMaxTokenLength(env);
+    unsigned long maxTokenLength = WinSso::GetMaxTokenLength(env);
     unsigned char* outToken = new unsigned char[maxTokenLength];
 
     outSecBufferDesc.ulVersion = 0;
@@ -157,23 +157,23 @@ namespace WinSso {
     outSecBuff.BufferType = SECBUFFER_TOKEN;
     outSecBuff.pvBuffer = outToken;
 
-    AcquireCredentialsHandle(&credHandle, &lifeTime, env);
+    WinSso::AcquireCredentialsHandle(&credHandle, &lifeTime, env);
     if (env.IsExceptionPending()) {
       return Napi::Buffer<unsigned char>::Buffer();
     }
 
     // Here we use _packageName as target SPN since the target SPN is not used in this call
-    int result = InitializeSecurityContext(NULL, &outSecBufferDesc, _packageName, &credHandle, &ctxHandle, &ctxAttributes, &lifeTime, env);
+    int result = WinSso::InitializeSecurityContext(NULL, &outSecBufferDesc, &_packageName, &credHandle, &ctxHandle, &ctxAttributes, &lifeTime, env);
     if (result != SEC_I_CONTINUE_NEEDED) {
       std::string message = "Init security context did not return SEC_I_CONTINUE_NEEDED. Result: ";
       message += std::to_string(result);
       Napi::Error::New(env, message).ThrowAsJavaScriptException();
-      FreeCredentialsHandle(&credHandle, env);
+      WinSso::FreeCredentialsHandle(&credHandle, env);
       return Napi::Buffer<unsigned char>::Buffer();
     }
 
-    FreeContextHandle(&ctxHandle, env);
-    FreeCredentialsHandle(&credHandle, env);
+    WinSso::FreeContextHandle(&ctxHandle, env);
+    WinSso::FreeCredentialsHandle(&credHandle, env);
 
     auto outTokenBuffer = Napi::Buffer<unsigned char>::Copy(env, outToken, outSecBuff.cbBuffer);
     delete outToken;
@@ -202,7 +202,7 @@ namespace WinSso {
     SECURITY_INTEGER lifeTime;
     struct _SecHandle ctxHandle;
     unsigned long ctxAttributes = 0;
-    unsigned long maxTokenLength = GetMaxTokenLength(env);
+    unsigned long maxTokenLength = WinSso::GetMaxTokenLength(env);
     unsigned char* outToken = new unsigned char[maxTokenLength];
 
     outSecBufferDesc.ulVersion = 0;
@@ -218,16 +218,22 @@ namespace WinSso {
       return Napi::Buffer<unsigned char>::Buffer();
     }
 
-    int result = InitializeSecurityContext(NULL, &outSecBufferDesc, info[1].ToString(), &credHandle, &ctxHandle, &ctxAttributes, &lifeTime, env);
+    std::string targetHost = info[1].ToString().Utf8Value();
+    std::string* targetHostRef = NULL;
+    if (targetHost.length() > 0) {
+      targetHostRef = &targetHost;
+    }
+
+    int result = WinSso::InitializeSecurityContext(NULL, &outSecBufferDesc, targetHostRef, &credHandle, &ctxHandle, &ctxAttributes, &lifeTime, env);
     if (result != SEC_I_CONTINUE_NEEDED) {
       std::string message = "Init security context did not return SEC_I_CONTINUE_NEEDED. Result: ";
       message += std::to_string(result);
       Napi::Error::New(env, message).ThrowAsJavaScriptException();
-      FreeCredentialsHandle(&credHandle, env);
+      WinSso::FreeCredentialsHandle(&credHandle, env);
       return Napi::Buffer<unsigned char>::Buffer();
     }
     if (env.IsExceptionPending()) {
-      FreeCredentialsHandle(&credHandle, env);
+      WinSso::FreeCredentialsHandle(&credHandle, env);
       return Napi::Buffer<unsigned char>::Buffer();
     }
 
@@ -266,23 +272,23 @@ namespace WinSso {
 
     outSecBuff.cbBuffer = maxTokenLength;
 
-    result = InitializeSecurityContext(&inSecBufferDesc, &outSecBufferDesc, info[1].ToString(), &credHandle, &ctxHandle, &ctxAttributes, &lifeTime, env);
+    result = WinSso::InitializeSecurityContext(&inSecBufferDesc, &outSecBufferDesc, targetHostRef, &credHandle, &ctxHandle, &ctxAttributes, &lifeTime, env);
     if (result != SEC_E_OK) {
       std::string message = "Init security context did not return SEC_E_OK. Result: ";
       message += std::to_string(result);
       Napi::Error::New(env, message).ThrowAsJavaScriptException();
-      FreeContextHandle(&ctxHandle, env);
-      FreeCredentialsHandle(&credHandle, env);
+      WinSso::FreeContextHandle(&ctxHandle, env);
+      WinSso::FreeCredentialsHandle(&credHandle, env);
       return Napi::Buffer<unsigned char>::Buffer();
     }
     if (env.IsExceptionPending()) {
-      FreeContextHandle(&ctxHandle, env);
-      FreeCredentialsHandle(&credHandle, env);
+      WinSso::FreeContextHandle(&ctxHandle, env);
+      WinSso::FreeCredentialsHandle(&credHandle, env);
       return Napi::Buffer<unsigned char>::Buffer();
     }
 
-    FreeContextHandle(&ctxHandle, env);
-    FreeCredentialsHandle(&credHandle, env);
+    WinSso::FreeContextHandle(&ctxHandle, env);
+    WinSso::FreeCredentialsHandle(&credHandle, env);
 
     auto outTokenBuffer = Napi::Buffer<unsigned char>::Copy(env, outToken, outSecBuff.cbBuffer);
     delete outToken;

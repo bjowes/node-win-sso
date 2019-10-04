@@ -60,7 +60,7 @@ export class WinSso {
   /**
    * Creates a NTLM type 3 authentication token
    * @param inTokenHeader {string} The www-authentication header received from the target (NTLM type 2 token)
-   * @param targetHost {string | undefind} The FQDN hostname of the target (optional)
+   * @param targetHost {string | undefined} The FQDN hostname of the target (optional)
    * @param peerCert {PeerCertificate | undefined} The certificate of the target server (optional, for HTTPS channel binding)
    * @returns {Buffer} Raw token buffer
    */
@@ -74,6 +74,11 @@ export class WinSso {
       );
     }
     let inToken = Buffer.from(ntlmMatch[1], 'base64');
+
+    let targetHostStr = '';
+    if (targetHost) {
+      targetHostStr = targetHost;
+    }
     let applicationData: Buffer;
     if (peerCert) {
       applicationData = this.getChannelBindingsApplicationData(peerCert);
@@ -81,7 +86,7 @@ export class WinSso {
       applicationData = Buffer.alloc(0);
     }
 
-    let token = winSsoAddon.createAuthResponse(inToken, targetHost, applicationData);
+    let token = winSsoAddon.createAuthResponse(inToken, targetHostStr, applicationData);
     debug('Created NTLM type 3 token', token.toString('base64'));
     return token;
   }
