@@ -48,6 +48,8 @@ Returns the Authentication Response token as a buffer. This is the NTLM type 3 m
 * targetHost (optional): The FQDN of the target host. This is used to build a SPN string in the NTLM message for enhanced security.
 * peerCert (optional): If the connection is http, pass undefined. If the connection is https, pass the peer certificate to add Channel Binding to the NTLM message for enhanced security.
 
+This method throws if the NTLM type 3 message could not be created. One such scenario is if the NTLM type 2 message requires NTLMv1, and the client settings does not permit NTLMv1.
+
 ### WinSso.createAuthResponseHeader(inTokenHeader: string, targetHost: string | undefined, peerCert: PeerCertificate | undefined): string
 
 Returns the Authentication Response header as a string. This is the token returned by WinSso.createAuthResponse() encoded as Base64, prefixed with the string 'NTLM '. This is the expected format of the Authorization header in a http/https request to the target server to finalize the NTLM handshake.
@@ -55,6 +57,8 @@ Returns the Authentication Response header as a string. This is the token return
 * inTokenHeader: The content of the 'www-authenticate' header in the response to the Authentication Request. It contains the NTLM type 2 message.
 * targetHost (optional): The FQDN of the target host. This is used to build a SPN string in the NTLM message for enhanced security.
 * peerCert (optional): If the connection is http, pass undefined. If the connection is https, pass the peer certificate to add Channel Binding to the NTLM message for enhanced security.
+
+This method throws if the NTLM type 3 message could not be created. One such scenario is if the NTLM type 2 message requires NTLMv1, and the client settings does not permit NTLMv1.
 
 ### Limitations
 

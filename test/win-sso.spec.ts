@@ -10,10 +10,10 @@ describe('WinSso', function() {
     }
   });
 
-  describe('getUserName', function () {
+  describe('getLogonUserName', function () {
     it('should return a username', function() {
       // Act
-      let result = WinSso.getUserName();
+      let result = WinSso.getLogonUserName();
 
       // Assert
       chai.expect(result.length).to.be.greaterThan(0);
@@ -103,8 +103,8 @@ describe('WinSso', function() {
 
       // Assert
       let base64tokenHeader = result.slice(0,12).toString('base64');
-      let expectType1Header = Buffer.from("NTLMSSP\0\x03\x00\x00\x00").toString('base64');
-      chai.expect(base64tokenHeader).to.equal(expectType1Header);
+      let expectType3Header = Buffer.from("NTLMSSP\0\x03\x00\x00\x00").toString('base64');
+      chai.expect(base64tokenHeader).to.equal(expectType3Header);
     });
 
     it('should provide a NTLM type 3 message when passed a PeerCertificate', function() {
@@ -119,8 +119,8 @@ describe('WinSso', function() {
 
       // Assert
       let base64tokenHeader = result.slice(0,12).toString('base64');
-      let expectType1Header = Buffer.from("NTLMSSP\0\x03\x00\x00\x00").toString('base64');
-      chai.expect(base64tokenHeader).to.equal(expectType1Header);
+      let expectType3Header = Buffer.from("NTLMSSP\0\x03\x00\x00\x00").toString('base64');
+      chai.expect(base64tokenHeader).to.equal(expectType3Header);
     });
 
     it('should provide a NTLM type 3 message with undefined targetHost', function() {
@@ -129,8 +129,29 @@ describe('WinSso', function() {
 
       // Assert
       let base64tokenHeader = result.slice(0,12).toString('base64');
-      let expectType1Header = Buffer.from("NTLMSSP\0\x03\x00\x00\x00").toString('base64');
-      chai.expect(base64tokenHeader).to.equal(expectType1Header);
+      let expectType3Header = Buffer.from("NTLMSSP\0\x03\x00\x00\x00").toString('base64');
+      chai.expect(base64tokenHeader).to.equal(expectType3Header);
+    });
+
+    // This test accepts two scenarios - success or throws a specific error. The background is that
+    // we don't know the client settings where the test is executed - it might allow NTLMv1
+    it('should provide a NTLM type 3 message from NTLM v1 challenge, if NTLMv1 is allowed by client', function() {
+      // Arrange
+      let ntlmV1_type2MessageHeader = 'NTLM TlRMTVNTUAACAAAAAAAAAAAoAAABggAAASNFZ4mrze8AAAAAAAAAAA==';
+      const expectNtlmV1error = 'Could not create NTLM type 3 message. Incoming type 2 message uses NTLMv1, it is likely that the client is prevented from sending such messages. Update target host to use NTLMv2 (recommended) or adjust LMCompatibilityLevel on the client (insecure)';
+
+      try {
+        // Act
+        let result = WinSso.createAuthResponse(ntlmV1_type2MessageHeader, undefined, undefined);
+
+        // Assert
+        let base64tokenHeader = result.slice(0,12).toString('base64');
+        let expectType3Header = Buffer.from("NTLMSSP\0\x03\x00\x00\x00").toString('base64');
+        chai.expect(base64tokenHeader).to.equal(expectType3Header);
+      } catch (err) {
+        // Assert
+        chai.expect(err.message).to.equal(expectNtlmV1error);
+      }
     });
 
     it('should throw if inToken is not a NTLM type 2 message', function() {
