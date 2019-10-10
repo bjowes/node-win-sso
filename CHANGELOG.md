@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1 - released 2019-10-10
+
+* Patched return statement
+
 ## 0.3.0 - released 2019-10-09
 
 * Detect if incoming challenge is NTLMv1 and the client is not permitted to use NTLMv1

@@ -99,9 +99,8 @@ export class WinSso {
                           'it is likely that the client is prevented from sending such messages. ' +
                           'Update target host to use NTLMv2 (recommended) or adjust LMCompatibilityLevel on the client (insecure)');
         }
-      } else {
-        throw err;
       }
+      throw err;
     }
   }
 
