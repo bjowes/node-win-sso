@@ -1,4 +1,5 @@
 #include <string.h>
+#include <map>
 
 #include "secur32.hh"
 #include "auth-context.hh"
@@ -25,7 +26,7 @@ namespace WinSso {
     return name;
   }
 
-  unsigned int GetMaxTokenLength(char* packageName, Napi::Env& env) {
+  unsigned int GetMaxTokenLength(char* packageName, Napi::Env* env) {
     static unsigned int _maxTokenLength = 0;
 
     if (_maxTokenLength != 0) {
@@ -35,33 +36,33 @@ namespace WinSso {
     PSecPkgInfoA	  	pkgInfo;
     int result = QuerySecurityPackageInfoA(packageName, &pkgInfo);
     if (result != 0) {
-      Napi::Error::New(env, "Could not get SecurityPackageInfo").ThrowAsJavaScriptException();
+      Napi::Error::New(*env, "Could not get SecurityPackageInfo").ThrowAsJavaScriptException();
       return 0;
     }
     _maxTokenLength = pkgInfo->cbMaxToken;
     result = FreeContextBuffer(pkgInfo);
     if (result != 0) {
-      Napi::Error::New(env, "Could not free context buffer").ThrowAsJavaScriptException();
+      Napi::Error::New(*env, "Could not free context buffer").ThrowAsJavaScriptException();
       return 0;
     }
     return _maxTokenLength;
   }
 
-  void AcquireCredentialsHandle(char* packageName, CredHandle* credHandle, SECURITY_INTEGER* lifeTime, Napi::Env& env) {
+  void AcquireCredentialsHandle(char* packageName, CredHandle* credHandle, SECURITY_INTEGER* lifeTime, Napi::Env* env) {
     int result = AcquireCredentialsHandleA(NULL, packageName, SECPKG_CRED_OUTBOUND, NULL, NULL, NULL, NULL, credHandle, lifeTime);
     if (result < 0) {
       std::string message = "Could not acquire credentials handle. Result: ";
       message += std::to_string(result);
-      Napi::Error::New(env, message).ThrowAsJavaScriptException();
+      Napi::Error::New(*env, message).ThrowAsJavaScriptException();
     }
   }
 
-  void FreeCredentialsHandle(CredHandle* credHandle, Napi::Env& env) {
+  void FreeCredentialsHandle(CredHandle* credHandle, Napi::Env* env) {
     int result = FreeCredentialsHandle(credHandle);
-    if (result != 0) {
+    if (result != 0 && env != 0) {
       std::string message = "Could not free credentials handle. Result: ";
       message += std::to_string(result);
-      Napi::Error::New(env, message).ThrowAsJavaScriptException();
+      Napi::Error::New(*env, message).ThrowAsJavaScriptException();
     }
   }
 
@@ -73,7 +74,7 @@ namespace WinSso {
     struct _SecHandle* ctxHandle,
     unsigned long* ctxAttributes,
     SECURITY_INTEGER* lifeTime,
-    Napi::Env& env)
+    Napi::Env* env)
   {
     int result = 0;
     if (inSecBufferDesc == NULL) {
@@ -115,17 +116,17 @@ namespace WinSso {
     if (result < 0) {
       std::string message = "Could not init security context. Result: ";
       message += std::to_string(result);
-      Napi::Error::New(env, message).ThrowAsJavaScriptException();
+      Napi::Error::New(*env, message).ThrowAsJavaScriptException();
     }
     return result;
   }
 
-  void FreeContextHandle(struct _SecHandle* ctxHandle, Napi::Env& env) {
+  void FreeContextHandle(struct _SecHandle* ctxHandle, Napi::Env* env) {
     int result = DeleteSecurityContext(ctxHandle);
-    if (result != 0) {
+    if (result != 0 && env != 0) {
       std::string message = "Could not delete security context. Result: ";
       message += std::to_string(result);
-      Napi::Error::New(env, message).ThrowAsJavaScriptException();
+      Napi::Error::New(*env, message).ThrowAsJavaScriptException();
     }
   }
 
@@ -152,10 +153,10 @@ namespace WinSso {
     auto applicationDataBuffer = info[2].As<Napi::Buffer<unsigned char>>();
 
     auto ac = std::make_shared<AuthContext>();
-    ac.Init(securityPackageName, targetHost, applicationDataBuffer, env);
+    ac->Init(&(securityPackageName.Utf8Value()), &(targetHost.Utf8Value()), applicationDataBuffer, &env);
     acKey++;
     acMap[acKey] = ac;
-    return Napi::Number::New(acKey);
+    return Napi::Number::New(env, acKey);
   }
 
   Napi::Number FreeAuthContext(const Napi::CallbackInfo& info) {
@@ -171,9 +172,13 @@ namespace WinSso {
       return Napi::Number::New(env, 0);
     }
 
-    auto acId = info[0].ToNumber();
-    auto erased = acMap.erase(acId);
-    return Napi::Number::New(erased);
+    auto acKey = info[0].ToNumber().Uint32Value();
+    size_t erased = 0;
+    if (acMap.find(acKey) != acMap.end()) {
+      acMap[acKey]->Cleanup(&env);
+      erased = acMap.erase(acKey);
+    }
+    return Napi::Number::New(env, erased);
   }
 
   /**
@@ -194,14 +199,14 @@ namespace WinSso {
 
     auto acKey = info[0].ToNumber().Uint32Value();
 
-    if (acMap.find(acKey) == mapOfWords.end()) {
+    if (acMap.find(acKey) == acMap.end()) {
       Napi::TypeError::New(env, "AuthContext not found").ThrowAsJavaScriptException();
       return Napi::Buffer<unsigned char>::Buffer();
     }
 
-    auto ac = acMap[acKey]
-    ac->InitContext(env);
-    return ac->OutToken();
+    auto ac = acMap[acKey];
+    ac->InitContext(&env);
+    return ac->OutToken(&env);
   }
 
   /**
@@ -221,20 +226,24 @@ namespace WinSso {
     }
 
     auto acKey = info[0].ToNumber().Uint32Value();
-    if (acMap.find(acKey) == mapOfWords.end()) {
+    if (acMap.find(acKey) == acMap.end()) {
       Napi::TypeError::New(env, "AuthContext not found").ThrowAsJavaScriptException();
       return Napi::Buffer<unsigned char>::Buffer();
     }
 
     auto inTokenBuffer = info[1].As<Napi::Buffer<unsigned char>>();
-    auto ac = acMap[acKey]
-    ac->HandleResponse(inTokenBuffer, env);
-    return ac->OutToken();
+    auto ac = acMap[acKey];
+    ac->HandleResponse(inTokenBuffer, &env);
+    return ac->OutToken(&env);
   }
 
   Napi::Object Init(Napi::Env env, Napi::Object exports) {
     exports.Set(Napi::String::New(env, "getUserName"),
                 Napi::Function::New(env, WinSso::GetUserName));
+    exports.Set(Napi::String::New(env, "createAuthContext"),
+                Napi::Function::New(env, WinSso::CreateAuthContext));
+    exports.Set(Napi::String::New(env, "freeAuthContext"),
+                Napi::Function::New(env, WinSso::FreeAuthContext));
     exports.Set(Napi::String::New(env, "createAuthRequest"),
                 Napi::Function::New(env, WinSso::CreateAuthRequest));
     exports.Set(Napi::String::New(env, "createAuthResponse"),

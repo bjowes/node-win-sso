@@ -13,7 +13,7 @@
 namespace WinSso {
   class AuthContext {
     public:
-    std::string packageName;
+    char packageName[128];
     std::string targetHostname;
     CredHandle credHandle;
     SECURITY_INTEGER lifeTime;
@@ -37,15 +37,13 @@ namespace WinSso {
     public:
     AuthContext();
     virtual ~AuthContext();
+    void Cleanup(Napi::Env* env);
 
-    bool Init(std::string* packageName, std::string* targetHost, Napi::Buffer<unsigned char>& applicationDataBuffer, Napi::Env& env);
-    bool InitContext(Napi::Env& env);
-    bool HandleResponse(
-      Napi::Buffer<unsigned char>& inTokenBuffer,
-      Napi::Buffer<unsigned char>& applicationDataBuffer,
-      Napi::Env& env);
+    bool Init(std::string* packageName, std::string* targetHost, Napi::Buffer<unsigned char>& applicationDataBuffer, Napi::Env* env);
+    bool InitContext(Napi::Env* env);
+    bool HandleResponse(Napi::Buffer<unsigned char>& inTokenBuffer, Napi::Env* env);
 
-    Napi::Buffer<unsigned char> OutToken(Napi::Env& env);
+    Napi::Buffer<unsigned char> OutToken(Napi::Env* env);
 
     private:
     void SetupChannelBindings(Napi::Buffer<unsigned char>& applicationDataBuffer);

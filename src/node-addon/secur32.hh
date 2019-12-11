@@ -12,10 +12,10 @@
 
 namespace WinSso {
 
-unsigned int GetMaxTokenLength(char* packageName, Napi::Env& env);
+unsigned int GetMaxTokenLength(char* packageName, Napi::Env* env);
 
-void AcquireCredentialsHandle(char* packageName, CredHandle* credHandle, SECURITY_INTEGER* lifeTime, Napi::Env& env);
-void FreeCredentialsHandle(CredHandle* credHandle, Napi::Env& env);
+void AcquireCredentialsHandle(char* packageName, CredHandle* credHandle, SECURITY_INTEGER* lifeTime, Napi::Env* env);
+void FreeCredentialsHandle(CredHandle* credHandle, Napi::Env* env);
 
 int InitializeSecurityContext(
     SecBufferDesc* inSecBufferDesc,
@@ -25,8 +25,8 @@ int InitializeSecurityContext(
     struct _SecHandle* ctxHandle,
     unsigned long* ctxAttributes,
     SECURITY_INTEGER* lifeTime,
-    Napi::Env& env);
-void FreeContextHandle(struct _SecHandle* ctxHandle, Napi::Env& env);
+    Napi::Env* env);
+void FreeContextHandle(struct _SecHandle* ctxHandle, Napi::Env* env);
 
 }
 

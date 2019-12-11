@@ -15,6 +15,26 @@ try {
  */
 export class WinSso {
 
+  private authContextId: number;
+  private securityPackage: string;
+
+  /**
+   * Creates an authentication context for SSO
+   * @param securityPackage {string} The name of the security package (NTLM or Negotiate)
+   * @param targetHost {string | undefind} The FQDN hostname of the target (optional)
+   * @param peerCert {PeerCertificate | undefined} The certificate of the target server (optional, for HTTPS channel binding)
+   */
+  constructor(securityPackage: string, targetHost: string | undefined, peerCert: PeerCertificate | undefined) {
+    this.securityPackage = securityPackage;
+    let applicationData: Buffer;
+    if (peerCert) {
+      applicationData = this.getChannelBindingsApplicationData(peerCert);
+    } else {
+      applicationData = Buffer.alloc(0);
+    }
+    this.authContextId = winSsoAddon.createAuthContext(securityPackage, targetHost, applicationData);
+  }
+
   /**
    * Retrieves the username of the logged in user
    * @returns {string} user name including domain
@@ -23,7 +43,7 @@ export class WinSso {
     return winSsoAddon.getUserName();
   }
 
-  private static getChannelBindingsApplicationData(peerCert: PeerCertificate) {
+  private getChannelBindingsApplicationData(peerCert: PeerCertificate) {
     let cert: any = peerCert;
     let hash = cert.fingerprint256.replace(/:/g, '');
     let hashBuf = Buffer.from(hash, 'hex');
@@ -35,14 +55,24 @@ export class WinSso {
   }
 
   /**
+   * Releases all allocated resources for the authorization context.
+   * Should be called when the context is no longer required, such as when the
+   * socket was closed.
+   */
+  freeAuthContext() {
+    winSsoAddon.freeAuthContext(this.authContextId);
+  }
+
+
+  /**
    * Creates a NTLM type 1 authentication token
    * This allocates unmanaged memory buffers, the destroy method must be called
    * to free them (on error or after authentication is completed)
    * @returns {Buffer} Raw token buffer
    */
-  static createAuthRequest(): Buffer {
-    let token = winSsoAddon.createAuthRequest();
-    debug('Created NTLM type 1 token', token.toString('base64'));
+  createAuthRequest(): Buffer {
+    let token = winSsoAddon.createAuthRequest(this.authContextId);
+    debug('Created ' + this.securityPackage + ' type 1 token', token.toString('base64'));
     return token;
   }
 
@@ -52,49 +82,38 @@ export class WinSso {
    * to free them (on error or after authentication is completed)
    * @returns {string} The NTLM type 1 header
    */
-  static createAuthRequestHeader(): string {
-    let header = 'NTLM ' + this.createAuthRequest().toString('base64');
+  createAuthRequestHeader(): string {
+    let header = this.securityPackage + ' ' + this.createAuthRequest().toString('base64');
     return header;
   }
 
   /**
    * Creates a NTLM type 3 authentication token
    * @param inTokenHeader {string} The www-authentication header received from the target (NTLM type 2 token)
-   * @param targetHost {string | undefind} The FQDN hostname of the target (optional)
-   * @param peerCert {PeerCertificate | undefined} The certificate of the target server (optional, for HTTPS channel binding)
    * @returns {Buffer} Raw token buffer
    */
-  static createAuthResponse(inTokenHeader: string, targetHost: string | undefined, peerCert: PeerCertificate | undefined): Buffer {
-    debug('Received NTLM type 2', inTokenHeader);
-    let ntlmMatch = /^NTLM ([^,\s]+)/.exec(inTokenHeader);
+  createAuthResponse(inTokenHeader: string): Buffer {
+    debug('Received ' + this.securityPackage + ' type 2', inTokenHeader);
+    let packageMatch = new RegExp('^' + this.securityPackage + '([^,\s]+)').exec(inTokenHeader);
 
-	  if (!ntlmMatch) {
+	  if (!packageMatch) {
       throw new Error(
-        'Invalid input token, missing NTLM prefix: ' + inTokenHeader
+        'Invalid input token, missing ' + this.securityPackage + ' prefix: ' + inTokenHeader
       );
     }
-    let inToken = Buffer.from(ntlmMatch[1], 'base64');
-    let applicationData: Buffer;
-    if (peerCert) {
-      applicationData = this.getChannelBindingsApplicationData(peerCert);
-    } else {
-      applicationData = Buffer.alloc(0);
-    }
-
-    let token = winSsoAddon.createAuthResponse(inToken, targetHost, applicationData);
-    debug('Created NTLM type 3 token', token.toString('base64'));
+    let inToken = Buffer.from(packageMatch[1], 'base64');
+    let token = winSsoAddon.createAuthResponse(this.authContextId, inToken);
+    debug('Created ' + this.securityPackage + ' type 3 token', token.toString('base64'));
     return token;
   }
 
   /**
    * Creates a NTLM type 3 www-authentication header (Challenge Response)
    * @param inTokenHeader {string} The www-authentication header received from the target (NTLM type 2 token)
-   * @param targetHost {string | undefined} The FQDN hostname of the target (optional)
-   * @param peerCert {PeerCertificate | undefined} The certificate of the target server (optional, for HTTPS channel binding)
    * @returns {string} The NTLM type 3 header
    */
-  static createAuthResponseHeader(inTokenHeader: string, targetHost: string | undefined, peerCert: PeerCertificate | undefined): string {
-    let header = 'NTLM ' + this.createAuthResponse(inTokenHeader, targetHost, peerCert).toString('base64');
+  createAuthResponseHeader(inTokenHeader: string): string {
+    let header = this.securityPackage + ' ' + this.createAuthResponse(inTokenHeader).toString('base64');
     return header;
   }
 }

@@ -1,4 +1,5 @@
-#import "auth-context.hh"
+#include "auth-context.hh"
+#include "secur32.hh"
 
 namespace WinSso {
   AuthContext::AuthContext() {
@@ -16,16 +17,18 @@ namespace WinSso {
   };
 
   AuthContext::~AuthContext() {
-    Cleanup();
+    // Napi::Env is not available in destructor, but we can still do cleanup without
+    // reporting JS exceptions to Node
+    Cleanup(0);
   }
 
-  void AuthContext::Cleanup() {
+  void AuthContext::Cleanup(Napi::Env* env) {
     if (credHandleAllocated) {
-      FreeCredentialsHandle(&credHandle, env);
+      WinSso::FreeCredentialsHandle(&credHandle, env);
       credHandleAllocated = false;
     }
     if (ctxHandleAllocated) {
-      FreeContextHandle(&ctxHandle, env);
+      WinSso::FreeContextHandle(&ctxHandle, env);
       ctxHandleAllocated = false;
     }
     if (outToken) {
@@ -34,14 +37,15 @@ namespace WinSso {
     }
   }
 
-  bool AuthContext::Init(std::string* securityPackageName, std::string* targetHost, Napi::Buffer<unsigned char>& applicationDataBuffer, Napi::Env& env) {
-    packageName = *securityPackageName;
+  bool AuthContext::Init(std::string* securityPackageName, std::string* targetHost, Napi::Buffer<unsigned char>& applicationDataBuffer, Napi::Env* env) {
+    auto packageNameLen = securityPackageName->copy(packageName, sizeof(packageName) - 1);
+    packageName[packageNameLen] = '\0';
     targetHostname = *targetHost;
-    maxTokenLength = GetMaxTokenLength(packageName.c_str(), env);
+    maxTokenLength = WinSso::GetMaxTokenLength(packageName, env);
     SetupChannelBindings(applicationDataBuffer);
-    AcquireCredentialsHandle(packageName.c_str(), &credHandle, &lifeTime, env);
-    if (env.IsExceptionPending()) {
-      Cleanup();
+    WinSso::AcquireCredentialsHandle(packageName, &credHandle, &lifeTime, env);
+    if (env->IsExceptionPending()) {
+      Cleanup(env);
       return false;
     }
     credHandleAllocated = true;
@@ -63,11 +67,9 @@ namespace WinSso {
     }
   }
 
-  bool AuthContext::InitContext(Napi::Env& env) {
+  bool AuthContext::InitContext(Napi::Env* env) {
     SecBufferDesc outSecBufferDesc;
     SecBuffer outSecBuff;
-    SecBufferDesc inSecBufferDesc;
-    SecBuffer inSecBuffer;
     outToken = new unsigned char[maxTokenLength];
 
     outSecBufferDesc.ulVersion = 0;
@@ -78,24 +80,13 @@ namespace WinSso {
     outSecBuff.BufferType = SECBUFFER_TOKEN;
     outSecBuff.pvBuffer = outToken;
 
-    inSecBufferDesc.ulVersion = 0;
-    inSecBufferDesc.cBuffers = 0;
-
-    if (channelBindingsLength > 0) {
-      inSecBufferDesc.cBuffers++;
-      inSecBufferDesc.pBuffers = &inSecBuffer;
-      inSecBuffer.cbBuffer = channelBindingsLength;
-      inSecBuffer.BufferType = SECBUFFER_CHANNEL_BINDINGS;
-      inSecBuffer.pvBuffer = &channelBindings;
-    }
-
     int result = InitializeSecurityContext(
-      inSecBufferDesc.cBuffers ? &inSecBufferDesc : NULL, &outSecBufferDesc, &targetHostname, &credHandle, &ctxHandle, &ctxAttributes, &lifeTime, env);
+      NULL, &outSecBufferDesc, &targetHostname, &credHandle, &ctxHandle, &ctxAttributes, &lifeTime, env);
     if (result != SEC_I_CONTINUE_NEEDED && result != SEC_E_OK) {
       std::string message = "Init security context did not return SEC_I_CONTINUE_NEEDED or SEC_E_OK. Result: ";
       message += std::to_string(result);
-      Napi::Error::New(env, message).ThrowAsJavaScriptException();
-      Cleanup();
+      Napi::Error::New(*env, message).ThrowAsJavaScriptException();
+      Cleanup(env);
       return false;
     }
     ctxHandleAllocated = true;
@@ -105,8 +96,7 @@ namespace WinSso {
 
   bool AuthContext::HandleResponse(
     Napi::Buffer<unsigned char>& inTokenBuffer,
-    Napi::Buffer<unsigned char>& applicationDataBuffer,
-    Napi::Env& env) {
+    Napi::Env* env) {
     SecBufferDesc outSecBufferDesc;
     SecBuffer outSecBuff;
     SecBufferDesc inSecBufferDesc;
@@ -130,21 +120,21 @@ namespace WinSso {
 
     if (channelBindingsLength > 0) {
       inSecBufferDesc.cBuffers++;
-      inSecBuffer.cbBuffer = channelBindingsLength;
-      inSecBuffer.BufferType = SECBUFFER_CHANNEL_BINDINGS;
-      inSecBuffer.pvBuffer = &channelBindings;
+      inSecBuffers[1].cbBuffer = channelBindingsLength;
+      inSecBuffers[1].BufferType = SECBUFFER_CHANNEL_BINDINGS;
+      inSecBuffers[1].pvBuffer = &channelBindings;
     }
 
-    result = InitializeSecurityContext(&inSecBufferDesc, &outSecBufferDesc, &targetHostname, &credHandle, &ctxHandle, &ctxAttributes, &lifeTime, env);
+    auto result = WinSso::InitializeSecurityContext(&inSecBufferDesc, &outSecBufferDesc, &targetHostname, &credHandle, &ctxHandle, &ctxAttributes, &lifeTime, env);
     if (result != SEC_I_CONTINUE_NEEDED && result != SEC_E_OK) {
       std::string message = "Init security context did not return SEC_I_CONTINUE_NEEDED or SEC_E_OK. Result: ";
       message += std::to_string(result);
-      Napi::Error::New(env, message).ThrowAsJavaScriptException();
-      Cleanup();
+      Napi::Error::New(*env, message).ThrowAsJavaScriptException();
+      Cleanup(env);
       return false;
     }
-    if (env.IsExceptionPending()) {
-      Cleanup();
+    if (env->IsExceptionPending()) {
+      Cleanup(env);
       return false;
     }
 
@@ -152,9 +142,9 @@ namespace WinSso {
     return true;
   }
 
-  Napi::Buffer<unsigned char> AuthContext::OutToken(Napi::Env& env) {
+  Napi::Buffer<unsigned char> AuthContext::OutToken(Napi::Env* env) {
     if (outToken) {
-      return Napi::Buffer<unsigned char>::Copy(env, outToken, outTokenLength);
+      return Napi::Buffer<unsigned char>::Copy(*env, outToken, outTokenLength);
     } else {
       return Napi::Buffer<unsigned char>::Buffer();
     }
