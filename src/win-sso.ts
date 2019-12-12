@@ -14,6 +14,7 @@ try {
  * Creates authentication tokens for NTLM handshake using the executing users credentials.
  */
 export class WinSso {
+  private static NEGOTIATE_NTLM2_KEY = 1<<19;
 
   private authContextId: number;
   private securityPackage: string;
@@ -27,6 +28,9 @@ export class WinSso {
   constructor(securityPackage: string, targetHost: string | undefined, peerCert: PeerCertificate | undefined) {
     this.securityPackage = securityPackage;
     let applicationData: Buffer;
+    if (!targetHost) {
+      targetHost = '';
+    }
     if (peerCert) {
       applicationData = this.getChannelBindingsApplicationData(peerCert);
     } else {
@@ -39,8 +43,8 @@ export class WinSso {
    * Retrieves the username of the logged in user
    * @returns {string} user name including domain
    */
-  static getUserName(): string {
-    return winSsoAddon.getUserName();
+  static getLogonUserName(): string {
+    return winSsoAddon.getLogonUserName();
   }
 
   private getChannelBindingsApplicationData(peerCert: PeerCertificate) {
@@ -102,9 +106,31 @@ export class WinSso {
       );
     }
     let inToken = Buffer.from(packageMatch[1], 'base64');
-    let token = winSsoAddon.createAuthResponse(this.authContextId, inToken);
-    debug('Created ' + this.securityPackage + ' type 3 token', token.toString('base64'));
-    return token;
+    try {
+      let token = winSsoAddon.createAuthResponse(this.authContextId, inToken);
+      debug('Created ' + this.securityPackage + ' type 3 token', token.toString('base64'));
+      return token;
+    } catch (err) {
+      if (err.message === 'Could not init security context. Result: -2146893054') {
+        // If incoming token is for NTLMv1, this error can occur when LMCompatibilityLevel prevents the client to send NTLMv1 messages
+        if (this.securityPackage === 'NTLM' && this.IsNtlmV1(inToken)) {
+          throw new Error('Could not create NTLM type 3 message. Incoming type 2 message uses NTLMv1, '+
+                          'it is likely that the client is prevented from sending such messages. ' +
+                          'Update target host to use NTLMv2 (recommended) or adjust LMCompatibilityLevel on the client (insecure)');
+        }
+      }
+      throw err;
+    }
+  }
+
+  private IsNtlmV1(type2message: Buffer): boolean {
+    if (type2message.length >= 24) {
+      const inTokenFlags = type2message.readInt32BE(20);
+      if ((inTokenFlags & WinSso.NEGOTIATE_NTLM2_KEY) === 0) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

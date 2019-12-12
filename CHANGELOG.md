@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.3.1 - released 2019-10-10
+
+* Patched return statement
+
+## 0.3.0 - released 2019-10-09
+
+* Detect if incoming challenge is NTLMv1 and the client is not permitted to use NTLMv1
+* Graceful error handling - allows nested errors from the native module
+
+## 0.2.15 - released 2019-10-04
+
+* Repair npm packaging
+
+## 0.2.14 - released 2019-10-04
+
+* Accept undefined targetHost in createAuthResponse and createAuthResponseHeader
+  
 ## 0.2.13 - released 2019-09-29
 
 * Graceful handling of prebuilds on non-Windows OS
