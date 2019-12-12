@@ -98,7 +98,7 @@ export class WinSso {
    */
   createAuthResponse(inTokenHeader: string): Buffer {
     debug('Received ' + this.securityPackage + ' type 2', inTokenHeader);
-    let packageMatch = new RegExp('^' + this.securityPackage + '([^,\s]+)').exec(inTokenHeader);
+    let packageMatch = new RegExp('^' + this.securityPackage + '\\s([^,\\s]+)').exec(inTokenHeader);
 
 	  if (!packageMatch) {
       throw new Error(

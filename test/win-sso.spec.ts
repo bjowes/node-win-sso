@@ -152,7 +152,7 @@ describe('WinSso', function() {
       winSsoCert.createAuthRequest();
 
       // Act
-      let result = winSso.createAuthResponse(type2MessageHeader);
+      let result = winSsoCert.createAuthResponse(type2MessageHeader);
       winSsoCert.freeAuthContext();
 
       // Assert
@@ -179,15 +179,6 @@ describe('WinSso', function() {
       // Arrange
       let ntlmV1_type2MessageHeader = 'NTLM TlRMTVNTUAACAAAAAAAAAAAoAAABggAAASNFZ4mrze8AAAAAAAAAAA==';
       const expectNtlmV1error = 'Could not create NTLM type 3 message. Incoming type 2 message uses NTLMv1, it is likely that the client is prevented from sending such messages. Update target host to use NTLMv2 (recommended) or adjust LMCompatibilityLevel on the client (insecure)';
-      let winSso: WinSso;
-
-      beforeEach(function() {
-        winSso = new WinSso('NTLM', targetHost, undefined);
-      });
-
-      afterEach(function() {
-        winSso.freeAuthContext();
-      });
 
       try {
         // Act
@@ -248,11 +239,14 @@ describe('WinSso', function() {
     });
 
     it('should provide a base64 encoded token from createAuthResponse', function() {
+      let winSso2 = new WinSso('NTLM', targetHost, undefined);
       winSso.createAuthRequest();
+      winSso2.createAuthRequest();
 
       // Act
       let result = winSso.createAuthResponseHeader(type2MessageHeader);
-      let token = winSso.createAuthResponse(type2MessageHeader);
+      let token = winSso2.createAuthResponse(type2MessageHeader);
+      winSso2.freeAuthContext();
 
       // Assert
       // Since the token will contain unique challenge and timestamp values the two calls
