@@ -11,7 +11,7 @@ try {
 }
 
 /**
- * Creates authentication tokens for NTLM handshake using the executing users credentials.
+ * Creates authentication tokens for NTLM or Negotiate handshake using the executing users credentials.
  */
 export class WinSso {
   private static NEGOTIATE_NTLM2_KEY = 1<<19;
@@ -20,7 +20,9 @@ export class WinSso {
   private securityPackage: string;
 
   /**
-   * Creates an authentication context for SSO
+   * Creates an authentication context for SSO.
+   * This allocates memory buffers, the freeAuthContext method should be called
+   * to free them (on error or after authentication is no longer needed)
    * @param securityPackage {string} The name of the security package (NTLM or Negotiate)
    * @param targetHost {string | undefind} The FQDN hostname of the target (optional)
    * @param peerCert {PeerCertificate | undefined} The certificate of the target server (optional, for HTTPS channel binding)
@@ -47,7 +49,11 @@ export class WinSso {
     return winSsoAddon.getLogonUserName();
   }
 
-  private getChannelBindingsApplicationData(peerCert: PeerCertificate) {
+  /**
+   * Transforms target TLS certificate into a channel binding application data buffer
+   * @param peerCert {PeerCertificate} Target TLS certificate
+   */
+  private getChannelBindingsApplicationData(peerCert: PeerCertificate): Buffer {
     let cert: any = peerCert;
     let hash = cert.fingerprint256.replace(/:/g, '');
     let hashBuf = Buffer.from(hash, 'hex');
@@ -69,22 +75,18 @@ export class WinSso {
 
 
   /**
-   * Creates a NTLM type 1 authentication token
-   * This allocates unmanaged memory buffers, the destroy method must be called
-   * to free them (on error or after authentication is completed)
+   * Creates an authentication request token
    * @returns {Buffer} Raw token buffer
    */
   createAuthRequest(): Buffer {
     let token = winSsoAddon.createAuthRequest(this.authContextId);
-    debug('Created ' + this.securityPackage + ' type 1 token', token.toString('base64'));
+    debug('Created ' + this.securityPackage + ' authentication request token', token.toString('base64'));
     return token;
   }
 
   /**
-   * Creates a NTLM type 1 www-authentication header (Authentication Request).
-   * This allocates unmanaged memory buffers, the destroy method must be called
-   * to free them (on error or after authentication is completed)
-   * @returns {string} The NTLM type 1 header
+   * Creates an authentication request header
+   * @returns {string} The www-authenticate header
    */
   createAuthRequestHeader(): string {
     let header = this.securityPackage + ' ' + this.createAuthRequest().toString('base64');
@@ -92,12 +94,12 @@ export class WinSso {
   }
 
   /**
-   * Creates a NTLM type 3 authentication token
-   * @param inTokenHeader {string} The www-authentication header received from the target (NTLM type 2 token)
+   * Creates an authentication response token
+   * @param inTokenHeader {string} The www-authentication header received from the target in reponse to the authentication request
    * @returns {Buffer} Raw token buffer
    */
   createAuthResponse(inTokenHeader: string): Buffer {
-    debug('Received ' + this.securityPackage + ' type 2', inTokenHeader);
+    debug('Received www-authentication response', inTokenHeader);
     let packageMatch = new RegExp('^' + this.securityPackage + '\\s([^,\\s]+)').exec(inTokenHeader);
 
 	  if (!packageMatch) {
@@ -108,7 +110,7 @@ export class WinSso {
     let inToken = Buffer.from(packageMatch[1], 'base64');
     try {
       let token = winSsoAddon.createAuthResponse(this.authContextId, inToken);
-      debug('Created ' + this.securityPackage + ' type 3 token', token.toString('base64'));
+      debug('Created ' + this.securityPackage + ' authentication response token', token.toString('base64'));
       return token;
     } catch (err) {
       if (err.message === 'Could not init security context. Result: -2146893054') {
@@ -134,9 +136,9 @@ export class WinSso {
   }
 
   /**
-   * Creates a NTLM type 3 www-authentication header (Challenge Response)
-   * @param inTokenHeader {string} The www-authentication header received from the target (NTLM type 2 token)
-   * @returns {string} The NTLM type 3 header
+   * Creates an authentication response header
+   * @param inTokenHeader {string} The www-authentication header received from the target in reponse to the authentication request
+   * @returns {string} The www-authenticate header
    */
   createAuthResponseHeader(inTokenHeader: string): string {
     let header = this.securityPackage + ' ' + this.createAuthResponse(inTokenHeader).toString('base64');
