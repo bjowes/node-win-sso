@@ -38,24 +38,26 @@
   "homepage": "https://github.com/bjowes/node-win-sso#readme",
   "dependencies": {
     "bindings": "*",
-    "cross-spawn": "^7.0.0",
+    "cross-spawn": "^7.0.1",
     "debug": "^4.1.1",
-    "node-addon-api": "*",
-    "node-gyp-build": "^4.1.1"
+    "node-addon-api": "^2.0.0",
+    "node-gyp": "^6.0.1",
+    "node-gyp-build": "^4.2.0"
   },
   "devDependencies": {
-    "@types/chai": "^4.2.3",
+    "@types/chai": "^4.2.7",
     "@types/debug": "^4.1.5",
     "@types/mocha": "^5.2.7",
-    "@types/node": "^12.7.3",
+    "@types/node": "^12.12.17",
+    "asn1-parser": "^1.1.8",
     "chai": "^4.2.0",
-    "mocha": "^6.2.1",
+    "mocha": "^6.2.2",
     "prebuildify": "^3.0.4",
     "shx": "^0.3.2",
-    "ts-node": "^8.3.0",
-    "tslint": "^5.19.0",
+    "ts-node": "^8.5.4",
+    "tslint": "^5.20.1",
     "tslint-eslint-rules": "^5.4.0",
-    "typescript": "^3.6.2",
+    "typescript": "^3.7.3",
     "vrsource-tslint-rules": "^6.0.0"
   },
   "gypfile": true

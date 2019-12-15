@@ -1,6 +1,8 @@
 import { WinSso } from '../src/win-sso';
 import chai from 'chai';
 import os from 'os';
+//import ASN1 from 'asn1-parser';
+const ASN1 = require('asn1-parser');
 
 describe('WinSso', function() {
 
@@ -22,67 +24,184 @@ describe('WinSso', function() {
   });
 
   describe('createAuthRequest', function () {
-    it('should return a token buffer', function() {
-      // Act
-      let result = WinSso.createAuthRequest();
+    describe('NTLM', function () {
+      let winSso: WinSso;
 
-      // Assert
-      chai.expect(result).to.be.instanceOf(Buffer);
+      beforeEach(function() {
+        winSso = new WinSso('NTLM', undefined, undefined);
+      });
+
+      afterEach(function() {
+        winSso.freeAuthContext();
+      });
+
+      it('should return a token buffer', function() {
+        // Act
+        let result = winSso.createAuthRequest();
+
+        // Assert
+        chai.expect(result).to.be.instanceOf(Buffer);
+      });
+
+      it('should not return an empty token buffer', function() {
+        // Act
+        let result = winSso.createAuthRequest();
+
+        // Assert
+        chai.expect(result.length).to.be.greaterThan(0);
+      });
+
+      it('should provide a NTLM type 1 message', function() {
+        // Act
+        let result = winSso.createAuthRequest();
+
+        // Assert
+        let base64tokenHeader = result.slice(0,12).toString('base64');
+        let expectType1Header = Buffer.from("NTLMSSP\0\x01\x00\x00\x00").toString('base64');
+        chai.expect(base64tokenHeader).to.equal(expectType1Header);
+      });
     });
 
-    it('should not return an empty token buffer', function() {
-      // Act
-      let result = WinSso.createAuthRequest();
+    describe('Negotiate', function() {
+      let winSso: WinSso;
 
-      // Assert
-      chai.expect(result.length).to.be.greaterThan(0);
-    });
+      beforeEach(function() {
+        winSso = new WinSso('Negotiate', undefined, undefined);
+      });
 
-    it('should provide a NTLM type 1 message', function() {
-      // Act
-      let result = WinSso.createAuthRequest();
+      afterEach(function() {
+        winSso.freeAuthContext();
+      });
 
-      // Assert
-      let base64tokenHeader = result.slice(0,12).toString('base64');
-      let expectType1Header = Buffer.from("NTLMSSP\0\x01\x00\x00\x00").toString('base64');
-      chai.expect(base64tokenHeader).to.equal(expectType1Header);
+      it('should return a token buffer', function() {
+        // Act
+        let result = winSso.createAuthRequest();
+
+        // Assert
+        chai.expect(result).to.be.instanceOf(Buffer);
+      });
+
+      it('should not return an empty token buffer', function() {
+        // Act
+        let result = winSso.createAuthRequest();
+
+        // Assert
+        chai.expect(result.length).to.be.greaterThan(0);
+      });
+
+      it('should provide a Negotiate type 1 message', function() {
+        // Act
+        let result = winSso.createAuthRequest();
+
+        // Assert
+        let dec = ASN1.ASN1.parse(result);
+        chai.expect(dec.type).to.be.equal(0x60);
+        chai.expect(dec.children.length).to.be.equal(2);
+        chai.expect(dec.children[0].type).to.be.equal(6);
+        chai.expect(dec.children[0].length).to.be.equal(6);
+        // gss-api.OID - 1.3.6.1.5.5.2 (SPNEGO - Simple Protected Negotiation) - 0x2b0601050502
+        let expectSpnego = Buffer.from("\x2b\x06\x01\x05\x05\x02").toString('base64');
+        chai.expect(dec.children[0].value.toString('base64')).to.be.equal(expectSpnego);
+      });
     });
   });
 
   describe('createAuthRequestHeader', function () {
-    it('should return a token header', function() {
-      // Act
-      let result = WinSso.createAuthRequestHeader();
+    describe('NTLM', function() {
+      let winSso: WinSso;
 
-      // Assert
-      chai.expect(result.length).to.be.greaterThan(0);
+      beforeEach(function() {
+        winSso = new WinSso('NTLM', undefined, undefined);
+      });
+
+      afterEach(function() {
+        winSso.freeAuthContext();
+      });
+
+      it('should return a token header', function() {
+        // Act
+        let result = winSso.createAuthRequestHeader();
+
+        // Assert
+        chai.expect(result.length).to.be.greaterThan(0);
+      });
+
+      it('should prefix the token with \'NTLM \'', function() {
+        // Act
+        let result = winSso.createAuthRequestHeader();
+
+        // Assert
+        chai.expect(result.indexOf('NTLM ')).to.equal(0);
+      });
+
+      it('should provide a base64 encoded token from createAuthRequest', function() {
+        // Act
+        let result = winSso.createAuthRequestHeader();
+        let token = winSso.createAuthRequest();
+        let prefixLength = 'NTLM '.length;
+
+        // Assert
+        chai.expect(result.substring(prefixLength)).to.equal(token.toString('base64'));
+      });
     });
 
-    it('should prefix the token with \'NTLM \'', function() {
-      // Act
-      let result = WinSso.createAuthRequestHeader();
+    describe('Negotiate', function() {
+      let winSso: WinSso;
 
-      // Assert
-      chai.expect(result.indexOf('NTLM ')).to.equal(0);
-    });
+      beforeEach(function() {
+        winSso = new WinSso('Negotiate', undefined, undefined);
+      });
 
-    it('should provide a base64 encoded token from createAuthRequest', function() {
-      // Act
-      let result = WinSso.createAuthRequestHeader();
-      let token = WinSso.createAuthRequest();
+      afterEach(function() {
+        winSso.freeAuthContext();
+      });
 
-      // Assert
-      chai.expect(result.substring(5)).to.equal(token.toString('base64'));
+      it('should return a token header', function() {
+        // Act
+        let result = winSso.createAuthRequestHeader();
+
+        // Assert
+        chai.expect(result.length).to.be.greaterThan(0);
+      });
+
+      it('should prefix the token with \'Negotiate \'', function() {
+        // Act
+        let result = winSso.createAuthRequestHeader();
+
+        // Assert
+        chai.expect(result.indexOf('Negotiate ')).to.equal(0);
+      });
+
+      it('should provide a base64 encoded token from createAuthRequest', function() {
+        // Act
+        let result = winSso.createAuthRequestHeader();
+        let token = winSso.createAuthRequest();
+        let prefixLength = 'Negotiate '.length;
+
+        // Assert
+        chai.expect(result.substring(prefixLength)).to.equal(token.toString('base64'));
+      });
     });
   });
 
   describe('createAuthResponse', function () {
     const type2MessageHeader = 'NTLM TlRMTVNTUAACAAAAFAAUADgAAAAFAIkCU3J2Tm9uY2UAAAAAAAAAAJYAlgBMAAAACgC6RwAAAA9VAFIAUwBBAC0ATQBJAE4ATwBSAAEAEABNAE8AUwBJAFMATABFAFkAAgAUAFUAUgBTAEEALQBNAEkATgBPAFIAAwAmAE0AbwBzAEkAcwBsAGUAeQAuAHUAcgBzAGEALgBtAGkAbgBvAHIABAAUAHUAcgBzAGEALgBtAGkAbgBvAHIABQAUAHUAcgBzAGEALgBtAGkAbgBvAHIABwAIAKUvIxkwMNUBAAAAAA==';
     const targetHost = 'MosIsley.ursa.minor';
+    let winSso: WinSso;
+
+    beforeEach(function() {
+      winSso = new WinSso('NTLM', targetHost, undefined);
+    });
+
+    afterEach(function() {
+      winSso.freeAuthContext();
+    });
 
     it('should return a token buffer', function() {
+      winSso.createAuthRequest();
+
       // Act
-      let result = WinSso.createAuthResponse(type2MessageHeader, targetHost, undefined);
+      let result = winSso.createAuthResponse(type2MessageHeader);
 
       // Assert
       chai.expect(result).to.be.instanceOf(Buffer);
@@ -90,16 +209,20 @@ describe('WinSso', function() {
     });
 
     it('should not return an empty token buffer', function() {
+      winSso.createAuthRequest();
+
       // Act
-      let result = WinSso.createAuthResponse(type2MessageHeader, targetHost, undefined);
+      let result = winSso.createAuthResponse(type2MessageHeader);
 
       // Assert
       chai.expect(result.length).to.be.greaterThan(0);
     });
 
     it('should provide a NTLM type 3 message', function() {
+      winSso.createAuthRequest();
+
       // Act
-      let result = WinSso.createAuthResponse(type2MessageHeader, targetHost, undefined);
+      let result = winSso.createAuthResponse(type2MessageHeader);
 
       // Assert
       let base64tokenHeader = result.slice(0,12).toString('base64');
@@ -113,9 +236,12 @@ describe('WinSso', function() {
       let fakeCert: any = {
         fingerprint256: fingerprint
       };
+      let winSsoCert = new WinSso('NTLM', targetHost, fakeCert);
+      winSsoCert.createAuthRequest();
 
       // Act
-      let result = WinSso.createAuthResponse(type2MessageHeader, targetHost, fakeCert);
+      let result = winSsoCert.createAuthResponse(type2MessageHeader);
+      winSsoCert.freeAuthContext();
 
       // Assert
       let base64tokenHeader = result.slice(0,12).toString('base64');
@@ -124,8 +250,10 @@ describe('WinSso', function() {
     });
 
     it('should provide a NTLM type 3 message with undefined targetHost', function() {
+      winSso.createAuthRequest();
+
       // Act
-      let result = WinSso.createAuthResponse(type2MessageHeader, undefined, undefined);
+      let result = winSso.createAuthResponse(type2MessageHeader);
 
       // Assert
       let base64tokenHeader = result.slice(0,12).toString('base64');
@@ -142,7 +270,8 @@ describe('WinSso', function() {
 
       try {
         // Act
-        let result = WinSso.createAuthResponse(ntlmV1_type2MessageHeader, undefined, undefined);
+        winSso.createAuthRequest();
+        let result = winSso.createAuthResponse(ntlmV1_type2MessageHeader);
 
         // Assert
         let base64tokenHeader = result.slice(0,12).toString('base64');
@@ -157,36 +286,55 @@ describe('WinSso', function() {
     it('should throw if inToken is not a NTLM type 2 message', function() {
       // Arrange
       let dummyToken = 'NOT NTLM AT ALL';
+      winSso.createAuthRequest();
 
       // Act & Assert
-      chai.expect(() => WinSso.createAuthResponse(dummyToken, targetHost, undefined)).to.throw();
+      chai.expect(() => winSso.createAuthResponse(dummyToken)).to.throw();
     });
   });
 
   describe('createAuthResponseHeader', function () {
     const type2MessageHeader = 'NTLM TlRMTVNTUAACAAAAFAAUADgAAAAFAIkCU3J2Tm9uY2UAAAAAAAAAAJYAlgBMAAAACgC6RwAAAA9VAFIAUwBBAC0ATQBJAE4ATwBSAAEAEABNAE8AUwBJAFMATABFAFkAAgAUAFUAUgBTAEEALQBNAEkATgBPAFIAAwAmAE0AbwBzAEkAcwBsAGUAeQAuAHUAcgBzAGEALgBtAGkAbgBvAHIABAAUAHUAcgBzAGEALgBtAGkAbgBvAHIABQAUAHUAcgBzAGEALgBtAGkAbgBvAHIABwAIAKUvIxkwMNUBAAAAAA==';
     const targetHost = 'MosIsley.ursa.minor';
+    let winSso: WinSso;
+
+    beforeEach(function() {
+      winSso = new WinSso('NTLM', targetHost, undefined);
+    });
+
+    afterEach(function() {
+      winSso.freeAuthContext();
+    });
 
     it('should return a token header', function() {
+      winSso.createAuthRequest();
+
       // Act
-      let result = WinSso.createAuthResponseHeader(type2MessageHeader, targetHost, undefined);
+      let result = winSso.createAuthResponseHeader(type2MessageHeader);
 
       // Assert
       chai.expect(result.length).to.be.greaterThan(0);
     });
 
     it('should prefix the token with \'NTLM \'', function() {
+      winSso.createAuthRequest();
+
       // Act
-      let result = WinSso.createAuthResponseHeader(type2MessageHeader, targetHost, undefined);
+      let result = winSso.createAuthResponseHeader(type2MessageHeader);
 
       // Assert
       chai.expect(result.indexOf('NTLM ')).to.equal(0);
     });
 
     it('should provide a base64 encoded token from createAuthResponse', function() {
+      let winSso2 = new WinSso('NTLM', targetHost, undefined);
+      winSso.createAuthRequest();
+      winSso2.createAuthRequest();
+
       // Act
-      let result = WinSso.createAuthResponseHeader(type2MessageHeader, targetHost, undefined);
-      let token = WinSso.createAuthResponse(type2MessageHeader, targetHost, undefined);
+      let result = winSso.createAuthResponseHeader(type2MessageHeader);
+      let token = winSso2.createAuthResponse(type2MessageHeader);
+      winSso2.freeAuthContext();
 
       // Assert
       // Since the token will contain unique challenge and timestamp values the two calls
