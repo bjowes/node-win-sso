@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.0 - released 2019-12-15
+
+* Refactored with authentication state handling
+* Support for Negotiate
+
 ## 0.3.1 - released 2019-10-10
 
 * Patched return statement

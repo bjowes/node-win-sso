@@ -48,6 +48,7 @@
     "@types/debug": "^4.1.5",
     "@types/mocha": "^5.2.7",
     "@types/node": "^12.12.17",
+    "asn1-parser": "^1.1.8",
     "chai": "^4.2.0",
     "mocha": "^6.2.2",
     "prebuildify": "^3.0.4",

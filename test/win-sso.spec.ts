@@ -1,6 +1,8 @@
 import { WinSso } from '../src/win-sso';
 import chai from 'chai';
 import os from 'os';
+//import ASN1 from 'asn1-parser';
+const ASN1 = require('asn1-parser');
 
 describe('WinSso', function() {
 
@@ -92,47 +94,93 @@ describe('WinSso', function() {
         let result = winSso.createAuthRequest();
 
         // Assert
-        let base64tokenHeader = result.slice(0,12).toString('base64');
-        let expectType1Header = Buffer.from("NTLMSSP\0\x01\x00\x00\x00").toString('base64');
-        chai.expect(base64tokenHeader).to.equal(expectType1Header);
+        let dec = ASN1.ASN1.parse(result);
+        chai.expect(dec.type).to.be.equal(0x60);
+        chai.expect(dec.children.length).to.be.equal(2);
+        chai.expect(dec.children[0].type).to.be.equal(6);
+        chai.expect(dec.children[0].length).to.be.equal(6);
+        // gss-api.OID - 1.3.6.1.5.5.2 (SPNEGO - Simple Protected Negotiation) - 0x2b0601050502
+        let expectSpnego = Buffer.from("\x2b\x06\x01\x05\x05\x02").toString('base64');
+        chai.expect(dec.children[0].value.toString('base64')).to.be.equal(expectSpnego);
       });
     });
   });
 
   describe('createAuthRequestHeader', function () {
-    let winSso: WinSso;
+    describe('NTLM', function() {
+      let winSso: WinSso;
 
-    beforeEach(function() {
-      winSso = new WinSso('NTLM', undefined, undefined);
+      beforeEach(function() {
+        winSso = new WinSso('NTLM', undefined, undefined);
+      });
+
+      afterEach(function() {
+        winSso.freeAuthContext();
+      });
+
+      it('should return a token header', function() {
+        // Act
+        let result = winSso.createAuthRequestHeader();
+
+        // Assert
+        chai.expect(result.length).to.be.greaterThan(0);
+      });
+
+      it('should prefix the token with \'NTLM \'', function() {
+        // Act
+        let result = winSso.createAuthRequestHeader();
+
+        // Assert
+        chai.expect(result.indexOf('NTLM ')).to.equal(0);
+      });
+
+      it('should provide a base64 encoded token from createAuthRequest', function() {
+        // Act
+        let result = winSso.createAuthRequestHeader();
+        let token = winSso.createAuthRequest();
+        let prefixLength = 'NTLM '.length;
+
+        // Assert
+        chai.expect(result.substring(prefixLength)).to.equal(token.toString('base64'));
+      });
     });
 
-    afterEach(function() {
-      winSso.freeAuthContext();
-    });
+    describe('Negotiate', function() {
+      let winSso: WinSso;
 
-    it('should return a token header', function() {
-      // Act
-      let result = winSso.createAuthRequestHeader();
+      beforeEach(function() {
+        winSso = new WinSso('Negotiate', undefined, undefined);
+      });
 
-      // Assert
-      chai.expect(result.length).to.be.greaterThan(0);
-    });
+      afterEach(function() {
+        winSso.freeAuthContext();
+      });
 
-    it('should prefix the token with \'NTLM \'', function() {
-      // Act
-      let result = winSso.createAuthRequestHeader();
+      it('should return a token header', function() {
+        // Act
+        let result = winSso.createAuthRequestHeader();
 
-      // Assert
-      chai.expect(result.indexOf('NTLM ')).to.equal(0);
-    });
+        // Assert
+        chai.expect(result.length).to.be.greaterThan(0);
+      });
 
-    it('should provide a base64 encoded token from createAuthRequest', function() {
-      // Act
-      let result = winSso.createAuthRequestHeader();
-      let token = winSso.createAuthRequest();
+      it('should prefix the token with \'Negotiate \'', function() {
+        // Act
+        let result = winSso.createAuthRequestHeader();
 
-      // Assert
-      chai.expect(result.substring(5)).to.equal(token.toString('base64'));
+        // Assert
+        chai.expect(result.indexOf('Negotiate ')).to.equal(0);
+      });
+
+      it('should provide a base64 encoded token from createAuthRequest', function() {
+        // Act
+        let result = winSso.createAuthRequestHeader();
+        let token = winSso.createAuthRequest();
+        let prefixLength = 'Negotiate '.length;
+
+        // Assert
+        chai.expect(result.substring(prefixLength)).to.equal(token.toString('base64'));
+      });
     });
   });
 
