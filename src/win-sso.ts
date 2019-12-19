@@ -96,7 +96,7 @@ export class WinSso {
   /**
    * Creates an authentication response token
    * @param inTokenHeader {string} The www-authentication header received from the target in reponse to the authentication request
-   * @returns {Buffer} Raw token buffer
+   * @returns {Buffer} Raw token buffer. May be empty if Negotiate handshake  is complete.
    */
   createAuthResponse(inTokenHeader: string): Buffer {
     debug('Received www-authentication response', inTokenHeader);
@@ -110,7 +110,11 @@ export class WinSso {
     let inToken = Buffer.from(packageMatch[1], 'base64');
     try {
       let token = winSsoAddon.createAuthResponse(this.authContextId, inToken);
-      debug('Created ' + this.securityPackage + ' authentication response token', token.toString('base64'));
+      if (token.length > 0) {
+        debug('Created ' + this.securityPackage + ' authentication response token', token.toString('base64'));
+      } else {
+        debug('No response token, authentication complete');
+      }
       return token;
     } catch (err) {
       if (err.message === 'Could not init security context. Result: -2146893054') {
@@ -138,10 +142,14 @@ export class WinSso {
   /**
    * Creates an authentication response header
    * @param inTokenHeader {string} The www-authentication header received from the target in reponse to the authentication request
-   * @returns {string} The www-authenticate header
+   * @returns {string} The www-authenticate header. May be an empty string if Negotiate handshake is complete.
    */
   createAuthResponseHeader(inTokenHeader: string): string {
-    let header = this.securityPackage + ' ' + this.createAuthResponse(inTokenHeader).toString('base64');
+    const tokenBuffer = this.createAuthResponse(inTokenHeader);
+    if (tokenBuffer.length == 0) {
+      return '';
+    }
+    let header = this.securityPackage + ' ' + tokenBuffer.toString('base64');
     return header;
   }
 }
