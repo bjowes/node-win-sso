@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.1 - released 2019-12-19
+
+* Return empty header if no token was generated
+
 ## 1.0.0 - released 2019-12-15
 
 * Refactored with authentication state handling

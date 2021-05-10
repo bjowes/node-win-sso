@@ -90,7 +90,7 @@ Returns the Authentication Request header as a string. This is the token returne
 
 #### WinSso.createAuthResponse(inTokenHeader: string): Buffer
 
-Returns the Authentication Response token as a buffer. For NTLM this is the NTLM type 3 message, for Negotiate this is the NegTokenResp message.
+Returns the Authentication Response token as a buffer. For NTLM this is the NTLM type 3 message, for Negotiate this is the NegTokenResp message. May be an empty Buffer if Negotiate handshake is complete.
 
 * inTokenHeader: The content of the 'www-authenticate' header in the response to the Authentication Request.
 
@@ -98,7 +98,7 @@ This method throws if the response could not be created. One such scenario is if
 
 #### WinSso.createAuthResponseHeader(inTokenHeader: string): string
 
-Returns the Authentication Response header as a string. This is the token returned by WinSso.createAuthResponse() encoded as Base64, prefixed with the security package name. This is the expected format of the `Authorization` header in a http/https request to the target server to finalize the NTLM/Negotiate handshake.
+Returns the Authentication Response header as a string. This is the token returned by WinSso.createAuthResponse() encoded as Base64, prefixed with the security package name. This is the expected format of the `Authorization` header in a http/https request to the target server to finalize the NTLM/Negotiate handshake. May be an empty string if Negotiate handshake is complete.
 
 * inTokenHeader: The content of the 'www-authenticate' header in the response to the Authentication Request.
 
