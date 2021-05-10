@@ -2,14 +2,15 @@ build: false
 skip_branch_with_pr: true
 environment:
   matrix:
-    - nodejs_version: "15"
+    - nodejs_version: "16"
 configuration: Release
 platform:
   - x86
   - x64
 install:
   - SET PATH=C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin;%PATH%
-  - ps: Install-Product node $env:nodejs_version $env:platform
+  - ps: Update-NodeJsInstallation $env:nodejs_version $env:platform
+  #  - ps: Install-Product node $env:nodejs_version $env:platform
   - npm install
 test_script:
   - node --version
