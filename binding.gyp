@@ -4,7 +4,11 @@
       "target_name": "win-sso",
       "cflags!": [ "-fno-exceptions" ],
       "cflags_cc!": [ "-fno-exceptions" ],
-      "sources": [ "src/node-addon/*.cc" ],
+      "sources": [
+        "src/node-addon/auth-context.cc",
+        "src/node-addon/exception-handler.cc",
+        "src/node-addon/secur32-facade.cc"
+      ],
       "libraries": [
         "-lsecur32"
       ],
