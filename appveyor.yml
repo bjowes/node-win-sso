@@ -2,7 +2,7 @@ build: false
 skip_branch_with_pr: true
 environment:
   matrix:
-    - nodejs_version: "Current"
+    - nodejs_version: "16"
 configuration: Release
 platform:
   - x86
@@ -16,7 +16,7 @@ test_script:
   - npm --version
   - npm test
 after_test:
-  - ps: If ($env:nodejs_version -eq "Current") { npm run prebuildify }
+  - ps: npm run prebuildify
 artifacts:
   - path: prebuilds
     name: $(APPVEYOR_REPO_TAG_NAME)-win-$(PLATFORM)
@@ -30,4 +30,3 @@ deploy:
       secure: Sbew+OeDlocoGBDqoT618iFc+1V9h2fIykJsBYMELtP0Df5kA4Vz/PQHBqdp16lc
     on:
       appveyor_repo_tag: true
-      nodejs_version: "Current"
