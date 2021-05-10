@@ -2,7 +2,7 @@ build: false
 skip_branch_with_pr: true
 environment:
   matrix:
-    - nodejs_version: "16"
+    - nodejs_version: "15"
 configuration: Release
 platform:
   - x86
