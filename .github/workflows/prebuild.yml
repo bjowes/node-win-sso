@@ -10,7 +10,7 @@ on:
 
 jobs:
   unit-test:
-    name: Unit test
+    name: Prebuild node addon
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -24,6 +24,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: npm ci
       - run: npm run build
-      - run: npm run prebuildify
+      - run: npm run native_prebuildify_x86
+      - run: npm run native_prebuildify_x64
         env:
           CI: true

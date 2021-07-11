@@ -10,6 +10,8 @@
     "test": "mocha --require ./test/ts.hooks.js test/**/*.spec.ts",
     "prebuildify": "node prebuildify_env.js",
     "native_prebuildify": "prebuildify --napi --strip",
+    "native_prebuildify_x86": "prebuildify --napi --strip --platform x86",
+    "native_prebuildify_x64": "prebuildify --napi --strip --platform x64",
     "native_build": "node-gyp-build",
     "install": "node install_env.js"
   },
