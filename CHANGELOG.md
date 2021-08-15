@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.0 - released 2021-08-15
+
+* Migrated prebuild to GitHub Actions
+* Dependency bump
+
 ## 1.0.1 - released 2019-12-19
 
 * Return empty header if no token was generated
