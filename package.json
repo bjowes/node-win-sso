@@ -1,6 +1,6 @@
 {
   "name": "win-sso",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "NTLM single-sign-on for Node.js. Only Windows OS supported.",
   "main": "dist/index.js",
   "scripts": {
