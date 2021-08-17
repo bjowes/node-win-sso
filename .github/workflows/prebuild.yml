@@ -15,8 +15,8 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        node-version: [12, 14, 16]
-        architecture: [x86, x64]
+        node-version: [12] #, 14, 16]
+        architecture: [x86] #, x64]
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
@@ -30,11 +30,10 @@ jobs:
         env:
           CI: true
       - name: Archive prebuild
-        uses: thedoctor0/zip-release@master
+        uses: papeloto/action-zip@v1
         with:
-          type: 'zip'
-          directory: 'prebuilds'
-          filename: '${{ github.event.release.tag_name }}-win-${{ matrix.architecture }}.zip'
+          files: prebuilds/
+          dest: '${{ github.event.release.tag_name }}mupp-win-${{ matrix.architecture }}.zip'
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
