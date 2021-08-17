@@ -33,7 +33,7 @@ jobs:
         uses: papeloto/action-zip@v1
         with:
           files: prebuilds/
-          dest: '${{ github.event.release.tag_name }}mupp-win-${{ matrix.architecture }}.zip'
+          dest: 'win-${{ matrix.architecture }}.zip'
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
