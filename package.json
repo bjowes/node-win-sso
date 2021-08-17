@@ -5,13 +5,12 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "shx rm -rf dist && tsc",
-    "prepare_ju": "npm run build",
     "lint": "tslint --project .",
     "test": "mocha --require ./test/ts.hooks.js test/**/*.spec.ts",
     "prebuildify": "node prebuildify_env.js",
     "native_prebuildify": "prebuildify --napi --strip",
     "native_build": "node-gyp-build",
-    "install_ju": "node install_env.js"
+    "install": "node install_env.js"
   },
   "repository": {
     "type": "git",
