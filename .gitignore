@@ -75,3 +75,6 @@ prebuilds/
 # PoC file
 test/try.ts
 test/execution-time.js
+
+# OS X
+.DS_Store
