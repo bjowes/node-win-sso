@@ -1,20 +1,20 @@
-import { debug } from './utils/debug.logger';
-import { PeerCertificate } from 'tls';
-import path from 'path';
+import { debug } from "./utils/debug.logger";
+import { PeerCertificate } from "tls";
+import path from "path";
 
 let winSsoAddon: any;
 try {
-  winSsoAddon = require('node-gyp-build')(path.join(__dirname, '..'));
-  debug('Loaded win-sso native module');
+  winSsoAddon = require("node-gyp-build")(path.join(__dirname, ".."));
+  debug("Loaded win-sso native module");
 } catch (err) {
-  debug('Could not load win-sso native module');
+  debug("Could not load win-sso native module");
 }
 
 /**
  * Creates authentication tokens for NTLM or Negotiate handshake using the executing users credentials.
  */
 export class WinSso {
-  private static NEGOTIATE_NTLM2_KEY = 1<<19;
+  private static NEGOTIATE_NTLM2_KEY = 1 << 19;
 
   private authContextId: number;
   private securityPackage: string;
@@ -27,18 +27,26 @@ export class WinSso {
    * @param targetHost {string | undefind} The FQDN hostname of the target (optional)
    * @param peerCert {PeerCertificate | undefined} The certificate of the target server (optional, for HTTPS channel binding)
    */
-  constructor(securityPackage: string, targetHost: string | undefined, peerCert: PeerCertificate | undefined) {
+  constructor(
+    securityPackage: string,
+    targetHost: string | undefined,
+    peerCert: PeerCertificate | undefined
+  ) {
     this.securityPackage = securityPackage;
     let applicationData: Buffer;
     if (!targetHost) {
-      targetHost = '';
+      targetHost = "";
     }
     if (peerCert) {
       applicationData = this.getChannelBindingsApplicationData(peerCert);
     } else {
       applicationData = Buffer.alloc(0);
     }
-    this.authContextId = winSsoAddon.createAuthContext(securityPackage, targetHost, applicationData);
+    this.authContextId = winSsoAddon.createAuthContext(
+      securityPackage,
+      targetHost,
+      applicationData
+    );
   }
 
   /**
@@ -55,10 +63,12 @@ export class WinSso {
    */
   private getChannelBindingsApplicationData(peerCert: PeerCertificate): Buffer {
     let cert: any = peerCert;
-    let hash = cert.fingerprint256.replace(/:/g, '');
-    let hashBuf = Buffer.from(hash, 'hex');
-    let tlsServerEndPoint = 'tls-server-end-point:';
-    let applicationDataBuffer = Buffer.alloc(tlsServerEndPoint.length + hashBuf.length);
+    let hash = cert.fingerprint256.replace(/:/g, "");
+    let hashBuf = Buffer.from(hash, "hex");
+    let tlsServerEndPoint = "tls-server-end-point:";
+    let applicationDataBuffer = Buffer.alloc(
+      tlsServerEndPoint.length + hashBuf.length
+    );
     applicationDataBuffer.write(tlsServerEndPoint, 0, "ascii");
     hashBuf.copy(applicationDataBuffer, tlsServerEndPoint.length);
     return applicationDataBuffer;
@@ -73,14 +83,16 @@ export class WinSso {
     winSsoAddon.freeAuthContext(this.authContextId);
   }
 
-
   /**
    * Creates an authentication request token
    * @returns {Buffer} Raw token buffer
    */
   createAuthRequest(): Buffer {
     let token = winSsoAddon.createAuthRequest(this.authContextId);
-    debug('Created ' + this.securityPackage + ' authentication request token', token.toString('base64'));
+    debug(
+      "Created " + this.securityPackage + " authentication request token",
+      token.toString("base64")
+    );
     return token;
   }
 
@@ -89,7 +101,8 @@ export class WinSso {
    * @returns {string} The www-authenticate header
    */
   createAuthRequestHeader(): string {
-    let header = this.securityPackage + ' ' + this.createAuthRequest().toString('base64');
+    let header =
+      this.securityPackage + " " + this.createAuthRequest().toString("base64");
     return header;
   }
 
@@ -99,30 +112,43 @@ export class WinSso {
    * @returns {Buffer} Raw token buffer. May be empty if Negotiate handshake  is complete.
    */
   createAuthResponse(inTokenHeader: string): Buffer {
-    debug('Received www-authentication response', inTokenHeader);
-    let packageMatch = new RegExp('^' + this.securityPackage + '\\s([^,\\s]+)').exec(inTokenHeader);
+    debug("Received www-authentication response", inTokenHeader);
+    let packageMatch = new RegExp(
+      "^" + this.securityPackage + "\\s([^,\\s]+)"
+    ).exec(inTokenHeader);
 
-	  if (!packageMatch) {
+    if (!packageMatch) {
       throw new Error(
-        'Invalid input token, missing ' + this.securityPackage + ' prefix: ' + inTokenHeader
+        "Invalid input token, missing " +
+          this.securityPackage +
+          " prefix: " +
+          inTokenHeader
       );
     }
-    let inToken = Buffer.from(packageMatch[1], 'base64');
+    let inToken = Buffer.from(packageMatch[1], "base64");
     try {
       let token = winSsoAddon.createAuthResponse(this.authContextId, inToken);
       if (token.length > 0) {
-        debug('Created ' + this.securityPackage + ' authentication response token', token.toString('base64'));
+        debug(
+          "Created " + this.securityPackage + " authentication response token",
+          token.toString("base64")
+        );
       } else {
-        debug('No response token, authentication complete');
+        debug("No response token, authentication complete");
       }
       return token;
     } catch (err) {
-      if (err.message === 'Could not init security context. Result: -2146893054') {
+      if (
+        (err as Error).message ===
+        "Could not init security context. Result: -2146893054"
+      ) {
         // If incoming token is for NTLMv1, this error can occur when LMCompatibilityLevel prevents the client to send NTLMv1 messages
-        if (this.securityPackage === 'NTLM' && this.IsNtlmV1(inToken)) {
-          throw new Error('Could not create NTLM type 3 message. Incoming type 2 message uses NTLMv1, '+
-                          'it is likely that the client is prevented from sending such messages. ' +
-                          'Update target host to use NTLMv2 (recommended) or adjust LMCompatibilityLevel on the client (insecure)');
+        if (this.securityPackage === "NTLM" && this.IsNtlmV1(inToken)) {
+          throw new Error(
+            "Could not create NTLM type 3 message. Incoming type 2 message uses NTLMv1, " +
+              "it is likely that the client is prevented from sending such messages. " +
+              "Update target host to use NTLMv2 (recommended) or adjust LMCompatibilityLevel on the client (insecure)"
+          );
         }
       }
       throw err;
@@ -147,9 +173,9 @@ export class WinSso {
   createAuthResponseHeader(inTokenHeader: string): string {
     const tokenBuffer = this.createAuthResponse(inTokenHeader);
     if (tokenBuffer.length == 0) {
-      return '';
+      return "";
     }
-    let header = this.securityPackage + ' ' + tokenBuffer.toString('base64');
+    let header = this.securityPackage + " " + tokenBuffer.toString("base64");
     return header;
   }
 }

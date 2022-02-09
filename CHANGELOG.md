@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.5 - released 2022-02-09
+
+* Dependency bump
+
 ## 1.1.4 - released 2021-08-23
 
 * Migrated prebuild to GitHub Actions
