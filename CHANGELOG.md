@@ -1,6 +1,10 @@
 # Changelog
 
-## 1.1.5 - released 2022-02-09
+## 1.1.6 - released 2022-02-09
+
+* Patch release, add missing prebuilds from 1.1.5
+
+## 1.1.5 - released 2022-02-09 *deprecated*
 
 * Dependency bump
 
