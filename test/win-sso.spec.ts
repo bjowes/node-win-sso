@@ -39,7 +39,7 @@ describe("WinSso", function () {
         let result = winSso.createAuthRequest();
 
         // Assert
-        assert.equal(typeof result, typeof Buffer);
+        assert.ok(result instanceof Buffer);
       });
 
       it("should not return an empty token buffer", function () {
@@ -79,7 +79,7 @@ describe("WinSso", function () {
         let result = winSso.createAuthRequest();
 
         // Assert
-        assert.equal(typeof result, typeof Buffer);
+        assert.ok(result instanceof Buffer);
       });
 
       it("should not return an empty token buffer", function () {
@@ -208,7 +208,7 @@ describe("WinSso", function () {
       let result = winSso.createAuthResponse(type2MessageHeader);
 
       // Assert
-      assert.equal(typeof result, typeof Buffer);
+      assert.ok(result instanceof Buffer);
       assert.ok(result.length > 0);
     });
 
