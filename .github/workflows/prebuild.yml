@@ -24,6 +24,8 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           architecture: ${{ matrix.architecture }}
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.1
       - run: npm ci
       - run: npm run build
       - run: npm run native_prebuildify
