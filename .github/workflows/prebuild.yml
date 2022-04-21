@@ -18,8 +18,8 @@ jobs:
         node-version: [18]
         architecture: [x64]
         include:
-          - os: windows-2019
-            node-version: 18
+          - os: windows-latest
+            node-version: 16
             architecture: x86
     steps:
       - uses: actions/checkout@v2
