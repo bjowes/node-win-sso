@@ -23,9 +23,11 @@ export class WinSso {
    * Creates an authentication context for SSO.
    * This allocates memory buffers, the freeAuthContext method should be called
    * to free them (on error or after authentication is no longer needed)
-   * @param securityPackage {string} The name of the security package (NTLM or Negotiate)
-   * @param targetHost {string | undefind} The FQDN hostname of the target (optional)
-   * @param peerCert {PeerCertificate | undefined} The certificate of the target server (optional, for HTTPS channel binding)
+   *
+   * @param {string} securityPackage The name of the security package (NTLM or Negotiate)
+   * @param {string | undefined} targetHost The FQDN hostname of the target (optional)
+   * @param {PeerCertificate | undefined} peerCert The certificate of the target server
+   * (optional, for HTTPS channel binding)
    */
   constructor(
     securityPackage: string,
@@ -51,6 +53,7 @@ export class WinSso {
 
   /**
    * Retrieves the username of the logged in user
+   *
    * @returns {string} user name including domain
    */
   static getLogonUserName(): string {
@@ -59,14 +62,16 @@ export class WinSso {
 
   /**
    * Transforms target TLS certificate into a channel binding application data buffer
-   * @param peerCert {PeerCertificate} Target TLS certificate
+   *
+   * @param {PeerCertificate} peerCert Target TLS certificate
+   * @returns {Buffer} Application data buffer
    */
   private getChannelBindingsApplicationData(peerCert: PeerCertificate): Buffer {
-    let cert: any = peerCert;
-    let hash = cert.fingerprint256.replace(/:/g, "");
-    let hashBuf = Buffer.from(hash, "hex");
-    let tlsServerEndPoint = "tls-server-end-point:";
-    let applicationDataBuffer = Buffer.alloc(
+    const cert: any = peerCert;
+    const hash = cert.fingerprint256.replace(/:/g, "");
+    const hashBuf = Buffer.from(hash, "hex");
+    const tlsServerEndPoint = "tls-server-end-point:";
+    const applicationDataBuffer = Buffer.alloc(
       tlsServerEndPoint.length + hashBuf.length
     );
     applicationDataBuffer.write(tlsServerEndPoint, 0, "ascii");
@@ -85,10 +90,11 @@ export class WinSso {
 
   /**
    * Creates an authentication request token
+   *
    * @returns {Buffer} Raw token buffer
    */
   createAuthRequest(): Buffer {
-    let token = winSsoAddon.createAuthRequest(this.authContextId);
+    const token = winSsoAddon.createAuthRequest(this.authContextId);
     debug(
       "Created " + this.securityPackage + " authentication request token",
       token.toString("base64")
@@ -98,22 +104,25 @@ export class WinSso {
 
   /**
    * Creates an authentication request header
+   *
    * @returns {string} The www-authenticate header
    */
   createAuthRequestHeader(): string {
-    let header =
+    const header =
       this.securityPackage + " " + this.createAuthRequest().toString("base64");
     return header;
   }
 
   /**
    * Creates an authentication response token
-   * @param inTokenHeader {string} The www-authentication header received from the target in reponse to the authentication request
+   *
+   * @param {string} inTokenHeader The www-authentication header received from the target
+   * in response to the authentication request
    * @returns {Buffer} Raw token buffer. May be empty if Negotiate handshake  is complete.
    */
   createAuthResponse(inTokenHeader: string): Buffer {
     debug("Received www-authentication response", inTokenHeader);
-    let packageMatch = new RegExp(
+    const packageMatch = new RegExp(
       "^" + this.securityPackage + "\\s([^,\\s]+)"
     ).exec(inTokenHeader);
 
@@ -125,9 +134,9 @@ export class WinSso {
           inTokenHeader
       );
     }
-    let inToken = Buffer.from(packageMatch[1], "base64");
+    const inToken = Buffer.from(packageMatch[1], "base64");
     try {
-      let token = winSsoAddon.createAuthResponse(this.authContextId, inToken);
+      const token = winSsoAddon.createAuthResponse(this.authContextId, inToken);
       if (token.length > 0) {
         debug(
           "Created " + this.securityPackage + " authentication response token",
@@ -142,8 +151,9 @@ export class WinSso {
         (err as Error).message ===
         "Could not init security context. Result: -2146893054"
       ) {
-        // If incoming token is for NTLMv1, this error can occur when LMCompatibilityLevel prevents the client to send NTLMv1 messages
-        if (this.securityPackage === "NTLM" && this.IsNtlmV1(inToken)) {
+        // If incoming token is for NTLMv1, this error can occur when
+        // LMCompatibilityLevel prevents the client to send NTLMv1 messages
+        if (this.securityPackage === "NTLM" && this.isNtlmV1(inToken)) {
           throw new Error(
             "Could not create NTLM type 3 message. Incoming type 2 message uses NTLMv1, " +
               "it is likely that the client is prevented from sending such messages. " +
@@ -155,7 +165,8 @@ export class WinSso {
     }
   }
 
-  private IsNtlmV1(type2message: Buffer): boolean {
+  // eslint-disable-next-line require-jsdoc
+  private isNtlmV1(type2message: Buffer): boolean {
     if (type2message.length >= 24) {
       const inTokenFlags = type2message.readInt32BE(20);
       if ((inTokenFlags & WinSso.NEGOTIATE_NTLM2_KEY) === 0) {
@@ -167,7 +178,9 @@ export class WinSso {
 
   /**
    * Creates an authentication response header
-   * @param inTokenHeader {string} The www-authentication header received from the target in reponse to the authentication request
+   *
+   * @param {string} inTokenHeader The www-authentication header received from the target
+   * in response to the authentication request
    * @returns {string} The www-authenticate header. May be an empty string if Negotiate handshake is complete.
    */
   createAuthResponseHeader(inTokenHeader: string): string {
@@ -175,7 +188,7 @@ export class WinSso {
     if (tokenBuffer.length == 0) {
       return "";
     }
-    let header = this.securityPackage + " " + tokenBuffer.toString("base64");
+    const header = this.securityPackage + " " + tokenBuffer.toString("base64");
     return header;
   }
 }
