@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.8 - released 2022-04-23
+
+* Dependency bump
+* Replaced tslint with eslint
+
 ## 1.1.7 - released 2022-02-09
 
 * Patch release, add missing dist folder from 1.1.5
