@@ -40,10 +40,10 @@ class Secur32Facade {
   static int InitializeSecurityContext(
     SecBufferDesc* inSecBufferDesc,
     SecBufferDesc* outSecBufferDesc,
-    std::string* targetHost,
+    char* targetHost,
     CredHandle* credHandle,
     struct _SecHandle* ctxHandle,
-    unsigned long* ctxAttributes,
+    unsigned long flags,
     SECURITY_INTEGER* lifeTime,
     Napi::Env* env);
   static void FreeContextHandle(struct _SecHandle* ctxHandle, Napi::Env* env);
