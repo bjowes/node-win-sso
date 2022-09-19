@@ -14,7 +14,7 @@ class AuthContext {
   public:
   char packageName[128];
   std::string targetHostname;
-  std::string targetHostnameSpn;
+  char* targetHostnameSpn;
   CredHandle credHandle;
   SECURITY_INTEGER lifeTime;
   struct _SecHandle ctxHandle;
@@ -47,7 +47,6 @@ class AuthContext {
 
   private:
   void SetupChannelBindings(Napi::Buffer<unsigned char>& applicationDataBuffer);
-  const char* TargetHostnameSpnRef();
 };
 
 #endif

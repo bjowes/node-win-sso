@@ -11,12 +11,13 @@ AuthContext::AuthContext(bool delegate) {
     flags |= ISC_REQ_DELEGATE;
   }
   maxTokenLength = 0;
-  outToken = 0;
+  outToken = nullptr;
   outTokenLength = 0;
   credHandleAllocated = false;
   ctxHandleAllocated = false;
   channelBindings = {};
   channelBindingsLength = 0;
+  targetHostnameSpn = nullptr;
 };
 
 AuthContext::~AuthContext() {
@@ -36,7 +37,11 @@ void AuthContext::Cleanup(Napi::Env* env) {
   }
   if (outToken) {
     delete outToken;
-    outToken = 0;
+    outToken = nullptr;
+  }
+  if (targetHostnameSpn) {
+    delete targetHostnameSpn;
+    targetHostnameSpn = nullptr;;
   }
 }
 
@@ -45,7 +50,9 @@ bool AuthContext::Init(std::string* securityPackageName, std::string* targetHost
   packageName[packageNameLen] = '\0';
   targetHostname = *targetHost;
   if (targetHostname.length() > 0) {
-    targetHostnameSpn = "HTTP/" + targetHostname;
+    int len = targetHostname.length() + 5 + 1;
+    targetHostnameSpn = new char[len];
+    strncpy(targetHostnameSpn, ("HTTP/" + targetHostname).c_str(), len);
   }
   maxTokenLength = Secur32Facade::GetMaxTokenLength(packageName, env);
   SetupChannelBindings(applicationDataBuffer);
@@ -87,7 +94,7 @@ bool AuthContext::InitContext(Napi::Env* env) {
   outSecBuff.pvBuffer = outToken;
 
   int result = Secur32Facade::InitializeSecurityContext(
-    NULL, &outSecBufferDesc, TargetHostnameSpnRef(), &credHandle, &ctxHandle, flags, &lifeTime, env);
+    NULL, &outSecBufferDesc, targetHostnameSpn, &credHandle, &ctxHandle, flags, &lifeTime, env);
   if (env->IsExceptionPending()) {
     Cleanup(env);
     return false;
@@ -133,7 +140,7 @@ bool AuthContext::HandleResponse(
     inSecBuffers[1].pvBuffer = &channelBindings;
   }
 
-  auto result = Secur32Facade::InitializeSecurityContext(&inSecBufferDesc, &outSecBufferDesc, TargetHostnameSpnRef(), &credHandle, &ctxHandle, flags, &lifeTime, env);
+  auto result = Secur32Facade::InitializeSecurityContext(&inSecBufferDesc, &outSecBufferDesc, targetHostnameSpn, &credHandle, &ctxHandle, flags, &lifeTime, env);
   if (env->IsExceptionPending()) {
     Cleanup(env);
     return false;
@@ -154,12 +161,4 @@ Napi::Buffer<unsigned char> AuthContext::OutToken(Napi::Env* env) {
   } else {
     return Napi::Buffer<unsigned char>::Buffer();
   }
-}
-
-const char* AuthContext::TargetHostnameSpnRef() {
-  const char* targetHostnameSpnRef = NULL;
-  if (targetHostnameSpn.length() > 0) {
-    targetHostnameSpnRef = targetHostnameSpn.c_str();
-  }
-  return targetHostnameSpnRef;
 }
