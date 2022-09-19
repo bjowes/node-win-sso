@@ -47,7 +47,7 @@ class AuthContext {
 
   private:
   void SetupChannelBindings(Napi::Buffer<unsigned char>& applicationDataBuffer);
-  char* TargetHostnameSpnRef();
+  const char* TargetHostnameSpnRef();
 };
 
 #endif

@@ -67,7 +67,7 @@ void Secur32Facade::FreeCredentialsHandle(CredHandle* credHandle, Napi::Env* env
 int Secur32Facade::InitializeSecurityContext(
   SecBufferDesc* inSecBufferDesc,
   SecBufferDesc* outSecBufferDesc,
-  char* targetHostSpn,
+  const char* targetHostSpn,
   CredHandle* credHandle,
   struct _SecHandle* ctxHandle,
   unsigned long flags,

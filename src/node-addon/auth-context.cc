@@ -156,8 +156,8 @@ Napi::Buffer<unsigned char> AuthContext::OutToken(Napi::Env* env) {
   }
 }
 
-char* AuthContext::TargetHostnameSpnRef() {
-  char* targetHostnameSpnRef = NULL;
+const char* AuthContext::TargetHostnameSpnRef() {
+  const char* targetHostnameSpnRef = NULL;
   if (targetHostnameSpn.length() > 0) {
     targetHostnameSpnRef = targetHostnameSpn.c_str();
   }

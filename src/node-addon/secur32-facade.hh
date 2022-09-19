@@ -40,7 +40,7 @@ class Secur32Facade {
   static int InitializeSecurityContext(
     SecBufferDesc* inSecBufferDesc,
     SecBufferDesc* outSecBufferDesc,
-    char* targetHost,
+    const char* targetHost,
     CredHandle* credHandle,
     struct _SecHandle* ctxHandle,
     unsigned long flags,
