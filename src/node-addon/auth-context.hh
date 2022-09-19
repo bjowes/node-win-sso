@@ -14,10 +14,11 @@ class AuthContext {
   public:
   char packageName[128];
   std::string targetHostname;
+  std::string targetHostnameSpn;
   CredHandle credHandle;
   SECURITY_INTEGER lifeTime;
   struct _SecHandle ctxHandle;
-  unsigned long ctxAttributes;
+  unsigned long flags;
   unsigned long maxTokenLength;
   unsigned char* outToken;
   unsigned long outTokenLength;
@@ -34,7 +35,7 @@ class AuthContext {
   bool ctxHandleAllocated;
 
   public:
-  AuthContext();
+  AuthContext(bool delegate);
   virtual ~AuthContext();
   void Cleanup(Napi::Env* env);
 
@@ -46,7 +47,7 @@ class AuthContext {
 
   private:
   void SetupChannelBindings(Napi::Buffer<unsigned char>& applicationDataBuffer);
-  std::string* TargetHostnameRef();
+  char* TargetHostnameSpnRef();
 };
 
 #endif

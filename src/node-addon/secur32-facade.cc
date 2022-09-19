@@ -67,47 +67,44 @@ void Secur32Facade::FreeCredentialsHandle(CredHandle* credHandle, Napi::Env* env
 int Secur32Facade::InitializeSecurityContext(
   SecBufferDesc* inSecBufferDesc,
   SecBufferDesc* outSecBufferDesc,
-  std::string* targetHost,
+  char* targetHostSpn,
   CredHandle* credHandle,
   struct _SecHandle* ctxHandle,
-  unsigned long* ctxAttributes,
+  unsigned long flags,
   SECURITY_INTEGER* lifeTime,
   Napi::Env* env)
 {
   int result = 0;
+  unsigned long ignored;
+
   if (inSecBufferDesc == NULL) {
     result = ::InitializeSecurityContextA(
       credHandle,
       NULL,
-      NULL,
-      0,
+      targetHostSpn,
+      flags,
       0,
       SECURITY_NATIVE_DREP,
       NULL,
       0,
       ctxHandle,
       outSecBufferDesc,
-      ctxAttributes,
+      &ignored,
       lifeTime
     );
   } else {
-    char* spn = NULL;
-    if (targetHost != NULL) {
-      std::string spnPrep = "HTTP/" + *targetHost;
-      spn = (char*)spnPrep.c_str();
-    }
     result = ::InitializeSecurityContextA(
       credHandle,
       ctxHandle,
-      spn,
-      *ctxAttributes,
+      targetHostSpn,
+      flags,
       0,
       SECURITY_NATIVE_DREP,
       inSecBufferDesc,
       0,
       ctxHandle,
       outSecBufferDesc,
-      ctxAttributes,
+      &ignored,
       lifeTime
     );
   }
@@ -124,26 +121,23 @@ void Secur32Facade::FreeContextHandle(struct _SecHandle* ctxHandle, Napi::Env* e
   }
 }
 
-
-/**
- * Creates a ...
- */
 Napi::Number Secur32Facade::CreateAuthContext(const Napi::CallbackInfo& info) {
   Napi::Env env = info.Env();
-  if (info.Length() < 3) {
+  if (info.Length() < 4) {
     ExceptionHandler::CreateAndThrow(env, "Wrong number of arguments");
     return Napi::Number::New(env, 0);
   }
 
-  if (!info[0].IsString() || !info[1].IsString() || !info[2].IsBuffer()) {
+  if (!info[0].IsString() || !info[1].IsString() || !info[2].IsBuffer() || !info[3].IsBool()) {
     ExceptionHandler::CreateAndThrow(env, "Wrong argument types");
     return Napi::Number::New(env, 0);
   }
   auto securityPackageName = info[0].ToString();
   auto targetHost = info[1].ToString();
   auto applicationDataBuffer = info[2].As<Napi::Buffer<unsigned char>>();
+  auto delegate = info[3].ToBool();
 
-  auto ac = std::make_shared<AuthContext>();
+  auto ac = std::make_shared<AuthContext>(delegate);
   ac->Init(&(securityPackageName.Utf8Value()), &(targetHost.Utf8Value()), applicationDataBuffer, &env);
   acKey++;
   acMap[acKey] = ac;

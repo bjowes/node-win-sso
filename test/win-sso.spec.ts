@@ -27,7 +27,7 @@ describe("WinSso", function () {
       let winSso: WinSso;
 
       beforeEach(function () {
-        winSso = new WinSso("NTLM", undefined, undefined);
+        winSso = new WinSso("NTLM", undefined, undefined, false);
       });
 
       afterEach(function () {
@@ -67,7 +67,7 @@ describe("WinSso", function () {
       let winSso: WinSso;
 
       beforeEach(function () {
-        winSso = new WinSso("Negotiate", undefined, undefined);
+        winSso = new WinSso("Negotiate", undefined, undefined, false);
       });
 
       afterEach(function () {
@@ -114,7 +114,7 @@ describe("WinSso", function () {
       let winSso: WinSso;
 
       beforeEach(function () {
-        winSso = new WinSso("NTLM", undefined, undefined);
+        winSso = new WinSso("NTLM", undefined, undefined, false);
       });
 
       afterEach(function () {
@@ -152,7 +152,45 @@ describe("WinSso", function () {
       let winSso: WinSso;
 
       beforeEach(function () {
-        winSso = new WinSso("Negotiate", undefined, undefined);
+        winSso = new WinSso("Negotiate", undefined, undefined, false);
+      });
+
+      afterEach(function () {
+        winSso.freeAuthContext();
+      });
+
+      it("should return a token header", function () {
+        // Act
+        let result = winSso.createAuthRequestHeader();
+
+        // Assert
+        assert.ok(result.length > 0);
+      });
+
+      it("should prefix the token with 'Negotiate '", function () {
+        // Act
+        let result = winSso.createAuthRequestHeader();
+
+        // Assert
+        assert.equal(result.indexOf("Negotiate "), 0);
+      });
+
+      it("should provide a base64 encoded token from createAuthRequest", function () {
+        // Act
+        let result = winSso.createAuthRequestHeader();
+        let token = winSso.createAuthRequest();
+        let prefixLength = "Negotiate ".length;
+
+        // Assert
+        assert.equal(result.substring(prefixLength), token.toString("base64"));
+      });
+    });
+
+    describe("Negotiate with SPN and Delegate", function () {
+      let winSso: WinSso;
+
+      beforeEach(function () {
+        winSso = new WinSso("Negotiate", "my.target.com", undefined, true);
       });
 
       afterEach(function () {
@@ -194,7 +232,7 @@ describe("WinSso", function () {
     let winSso: WinSso;
 
     beforeEach(function () {
-      winSso = new WinSso("NTLM", targetHost, undefined);
+      winSso = new WinSso("NTLM", targetHost, undefined, false);
     });
 
     afterEach(function () {
@@ -242,7 +280,7 @@ describe("WinSso", function () {
       let fakeCert: any = {
         fingerprint256: fingerprint,
       };
-      let winSsoCert = new WinSso("NTLM", targetHost, fakeCert);
+      let winSsoCert = new WinSso("NTLM", targetHost, fakeCert, false);
       winSsoCert.createAuthRequest();
 
       // Act
@@ -314,7 +352,7 @@ describe("WinSso", function () {
     let winSso: WinSso;
 
     beforeEach(function () {
-      winSso = new WinSso("NTLM", targetHost, undefined);
+      winSso = new WinSso("NTLM", targetHost, undefined, false);
     });
 
     afterEach(function () {
@@ -342,7 +380,7 @@ describe("WinSso", function () {
     });
 
     it("should provide a base64 encoded token from createAuthResponse", function () {
-      let winSso2 = new WinSso("NTLM", targetHost, undefined);
+      let winSso2 = new WinSso("NTLM", targetHost, undefined, false);
       winSso.createAuthRequest();
       winSso2.createAuthRequest();
 

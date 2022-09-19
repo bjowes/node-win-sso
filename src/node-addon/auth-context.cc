@@ -2,11 +2,14 @@
 #include "secur32-facade.hh"
 #include "exception-handler.hh"
 
-AuthContext::AuthContext() {
+AuthContext::AuthContext(bool delegate) {
   credHandle = {};
   lifeTime = {};
   ctxHandle = {};
-  ctxAttributes = 0;
+  flags = ISC_REQ_MUTUAL_AUTH | ISC_REQ_SEQUENCE_DETECT;
+  if (delegate) {
+    flags |= ISC_REQ_DELEGATE;
+  }
   maxTokenLength = 0;
   outToken = 0;
   outTokenLength = 0;
@@ -41,6 +44,9 @@ bool AuthContext::Init(std::string* securityPackageName, std::string* targetHost
   auto packageNameLen = securityPackageName->copy(packageName, sizeof(packageName) - 1);
   packageName[packageNameLen] = '\0';
   targetHostname = *targetHost;
+  if (targetHostname.length() > 0) {
+    targetHostnameSpn = "HTTP/" + targetHostname;
+  }
   maxTokenLength = Secur32Facade::GetMaxTokenLength(packageName, env);
   SetupChannelBindings(applicationDataBuffer);
   Secur32Facade::AcquireCredentialsHandle(packageName, &credHandle, &lifeTime, env);
@@ -81,7 +87,7 @@ bool AuthContext::InitContext(Napi::Env* env) {
   outSecBuff.pvBuffer = outToken;
 
   int result = Secur32Facade::InitializeSecurityContext(
-    NULL, &outSecBufferDesc, TargetHostnameRef(), &credHandle, &ctxHandle, &ctxAttributes, &lifeTime, env);
+    NULL, &outSecBufferDesc, TargetHostnameSpnRef(), &credHandle, &ctxHandle, flags, &lifeTime, env);
   if (env->IsExceptionPending()) {
     Cleanup(env);
     return false;
@@ -127,7 +133,7 @@ bool AuthContext::HandleResponse(
     inSecBuffers[1].pvBuffer = &channelBindings;
   }
 
-  auto result = Secur32Facade::InitializeSecurityContext(&inSecBufferDesc, &outSecBufferDesc, TargetHostnameRef(), &credHandle, &ctxHandle, &ctxAttributes, &lifeTime, env);
+  auto result = Secur32Facade::InitializeSecurityContext(&inSecBufferDesc, &outSecBufferDesc, TargetHostnameSpnRef(), &credHandle, &ctxHandle, flags, &lifeTime, env);
   if (env->IsExceptionPending()) {
     Cleanup(env);
     return false;
@@ -150,10 +156,10 @@ Napi::Buffer<unsigned char> AuthContext::OutToken(Napi::Env* env) {
   }
 }
 
-std::string* AuthContext::TargetHostnameRef() {
-  std::string* targetHostnameRef = NULL;
-  if (targetHostname.length() > 0) {
-    targetHostnameRef = &targetHostname;
+char* AuthContext::TargetHostnameSpnRef() {
+  char* targetHostnameSpnRef = NULL;
+  if (targetHostnameSpn.length() > 0) {
+    targetHostnameSpnRef = targetHostnameSpn.c_str();
   }
-  return targetHostnameRef;
+  return targetHostnameSpnRef;
 }

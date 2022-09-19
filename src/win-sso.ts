@@ -25,14 +25,15 @@ export class WinSso {
    * to free them (on error or after authentication is no longer needed)
    *
    * @param {string} securityPackage The name of the security package (NTLM or Negotiate)
-   * @param {string | undefined} targetHost The FQDN hostname of the target (optional)
-   * @param {PeerCertificate | undefined} peerCert The certificate of the target server
-   * (optional, for HTTPS channel binding)
+   * @param {string | undefined} targetHost The FQDN hostname of the target (optional for NTLM, required for Kerberos)
+   * @param {PeerCertificate | undefined} peerCert The certificate of the target server (optional, for HTTPS channel binding)
+   * @param {string} delegate The tokens created should allow delegation of credentials. Only supported by Kerberos
    */
   constructor(
     securityPackage: string,
     targetHost: string | undefined,
-    peerCert: PeerCertificate | undefined
+    peerCert: PeerCertificate | undefined,
+    delegate: boolean
   ) {
     this.securityPackage = securityPackage;
     let applicationData: Buffer;
@@ -47,7 +48,8 @@ export class WinSso {
     this.authContextId = winSsoAddon.createAuthContext(
       securityPackage,
       targetHost,
-      applicationData
+      applicationData,
+      delegate
     );
   }
 
