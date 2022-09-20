@@ -48,6 +48,9 @@ class Secur32Facade {
     Napi::Env* env);
   static void FreeContextHandle(struct _SecHandle* ctxHandle, Napi::Env* env);
   static Napi::Object Init(Napi::Env env, Napi::Object exports);
+
+  private:
+  static unsigned long GetDefaultFlags(std::string securityPackageName);
 };
 
 #endif

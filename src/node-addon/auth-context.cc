@@ -2,14 +2,11 @@
 #include "secur32-facade.hh"
 #include "exception-handler.hh"
 
-AuthContext::AuthContext(bool delegate) {
+AuthContext::AuthContext() {
   credHandle = {};
   lifeTime = {};
   ctxHandle = {};
-  flags = ISC_REQ_MUTUAL_AUTH | ISC_REQ_SEQUENCE_DETECT;
-  if (delegate) {
-    flags |= ISC_REQ_DELEGATE;
-  }
+  flags = 0;
   maxTokenLength = 0;
   outToken = nullptr;
   outTokenLength = 0;
@@ -45,7 +42,8 @@ void AuthContext::Cleanup(Napi::Env* env) {
   }
 }
 
-bool AuthContext::Init(std::string* securityPackageName, std::string* targetHost, Napi::Buffer<unsigned char>& applicationDataBuffer, Napi::Env* env) {
+bool AuthContext::Init(std::string* securityPackageName, std::string* targetHost, Napi::Buffer<unsigned char>& applicationDataBuffer, unsigned long flags, Napi::Env* env) {
+  this->flags = flags;
   auto packageNameLen = securityPackageName->copy(packageName, sizeof(packageName) - 1);
   packageName[packageNameLen] = '\0';
   targetHostname = *targetHost;

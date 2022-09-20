@@ -25,7 +25,7 @@ Usage of this module requires some knowledge of the NTLM or Negotiate handshake 
 1. Client: Send http request to server (with FQDN `app.server.com`)
 2. Server: Respond with 401 where the `www-authenticate` header includes NTLM
 3. Client: Create WinSso instance for NTLM:
-`let winSso = new WinSso('NTLM', 'app.server.com', undefined);`
+`let winSso = new WinSso('NTLM', 'app.server.com', undefined, false);`
 4. Client: Get authentication request token:
 `let authRequestToken = winSso.createAuthRequestHeader();`
 5. Client: Resend the http request to the server, setting the `authorization` header to the value of the token
@@ -42,7 +42,7 @@ The NTLM handshake always follows this pattern.
 1. Client: Send http request to server (with FQDN `app.server.com`)
 2. Server: Respond with 401 where the `www-authenticate` header includes `Negotiate`
 3. Client: Create WinSso instance for Negotiate:
-`let winSso = new WinSso('Negotiate', 'app.server.com', undefined);`
+`let winSso = new WinSso('Negotiate', 'app.server.com', undefined, false);`
 4. Client: Get authentication request token:
 `let authRequestToken = winSso.createAuthRequestHeader();`
 5. Client: Resend the http request to the server, setting the `authorization` header to the value of the token
@@ -68,13 +68,14 @@ Utility method to simplify the case where an application supports multiple platf
 
 This class provides an interface to create and use an authentication context. Due to protocol details, one instance of this class should be created for each connection (socket) communicating with an endpoint where single-sign-on should be used. The class will free the resources it has allocated when it is destroyed, but it is still recommended to call the freeAuthContext() method when the instance will no longer be used.
 
-#### WinSso(securityPackage: string, targetHost: string | undefined, peerCert: PeerCertificate | undefined)
+#### WinSso(securityPackage: string, targetHost: string | undefined, peerCert: PeerCertificate | undefined, flags: number | undefined)
 
 Class constructor.
 
 * securityPackage: The name of the authentication method to use. Valid values are 'NTLM' and 'Negotiate'.
 * targetHost (optional): The FQDN of the target host. This is used to build a SPN string in the authentication message for enhanced security.
 * peerCert (optional): If the connection is http, pass undefined. If the connection is https, pass the peer certificate to add Channel Binding to the authentication message for enhanced security.
+* flags: Flags to set in the authentication context. If not set, NTML defaults to no flags, while Negotiate defaults to ISC_REQ_MUTUAL_AUTH | ISC_REQ_SEQUENCE_DETECT
 
 #### WinSso.getUserName(): string
 
