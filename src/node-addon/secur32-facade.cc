@@ -130,7 +130,7 @@ unsigned long Secur32Facade::GetDefaultFlags(std::string securityPackageName) {
 
 Napi::Number Secur32Facade::CreateAuthContext(const Napi::CallbackInfo& info) {
   Napi::Env env = info.Env();
-  if (info.Length() < 3 && info.Length() > 4) {
+  if (info.Length() < 3 || info.Length() > 4) {
     ExceptionHandler::CreateAndThrow(env, "Wrong number of arguments");
     return Napi::Number::New(env, 0);
   }
