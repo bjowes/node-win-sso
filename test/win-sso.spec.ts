@@ -27,7 +27,7 @@ describe("WinSso", function () {
       let winSso: WinSso;
 
       beforeEach(function () {
-        winSso = new WinSso("NTLM", undefined, undefined, false);
+        winSso = new WinSso("NTLM", undefined, undefined, undefined);
       });
 
       afterEach(function () {
@@ -67,7 +67,7 @@ describe("WinSso", function () {
       let winSso: WinSso;
 
       beforeEach(function () {
-        winSso = new WinSso("Negotiate", undefined, undefined, false);
+        winSso = new WinSso("Negotiate", undefined, undefined, undefined);
       });
 
       afterEach(function () {
@@ -114,7 +114,7 @@ describe("WinSso", function () {
       let winSso: WinSso;
 
       beforeEach(function () {
-        winSso = new WinSso("NTLM", undefined, undefined, false);
+        winSso = new WinSso("NTLM", undefined, undefined, undefined);
       });
 
       afterEach(function () {
@@ -152,7 +152,7 @@ describe("WinSso", function () {
       let winSso: WinSso;
 
       beforeEach(function () {
-        winSso = new WinSso("Negotiate", undefined, undefined, false);
+        winSso = new WinSso("Negotiate", undefined, undefined, undefined);
       });
 
       afterEach(function () {
@@ -186,11 +186,13 @@ describe("WinSso", function () {
       });
     });
 
-    describe("Negotiate with SPN and Delegate", function () {
+    describe("Negotiate with SPN and Flags", function () {
       let winSso: WinSso;
 
       beforeEach(function () {
-        winSso = new WinSso("Negotiate", "my.target.com", undefined, true);
+        const ISC_REQ_MUTUAL_AUTH = 2;
+        const ISC_REQ_SEQUENCE_DETECT = 8;
+        winSso = new WinSso("Negotiate", "my.target.com", undefined, ISC_REQ_MUTUAL_AUTH | ISC_REQ_SEQUENCE_DETECT);
       });
 
       afterEach(function () {
@@ -232,7 +234,7 @@ describe("WinSso", function () {
     let winSso: WinSso;
 
     beforeEach(function () {
-      winSso = new WinSso("NTLM", targetHost, undefined, false);
+      winSso = new WinSso("NTLM", targetHost, undefined, undefined);
     });
 
     afterEach(function () {
@@ -280,7 +282,7 @@ describe("WinSso", function () {
       let fakeCert: any = {
         fingerprint256: fingerprint,
       };
-      let winSsoCert = new WinSso("NTLM", targetHost, fakeCert, false);
+      let winSsoCert = new WinSso("NTLM", targetHost, fakeCert, undefined);
       winSsoCert.createAuthRequest();
 
       // Act
@@ -352,7 +354,7 @@ describe("WinSso", function () {
     let winSso: WinSso;
 
     beforeEach(function () {
-      winSso = new WinSso("NTLM", targetHost, undefined, false);
+      winSso = new WinSso("NTLM", targetHost, undefined, undefined);
     });
 
     afterEach(function () {
@@ -380,7 +382,7 @@ describe("WinSso", function () {
     });
 
     it("should provide a base64 encoded token from createAuthResponse", function () {
-      let winSso2 = new WinSso("NTLM", targetHost, undefined, false);
+      let winSso2 = new WinSso("NTLM", targetHost, undefined, undefined);
       winSso.createAuthRequest();
       winSso2.createAuthRequest();
 
