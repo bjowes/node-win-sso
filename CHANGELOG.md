@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.2.1 - released 2022-09-20
+## 1.3.0 - released 2022-09-21
 
 * Make authentication context flags configurable
 
