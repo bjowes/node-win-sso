@@ -130,19 +130,19 @@ unsigned long Secur32Facade::GetDefaultFlags(std::string securityPackageName) {
 
 Napi::Number Secur32Facade::CreateAuthContext(const Napi::CallbackInfo& info) {
   Napi::Env env = info.Env();
-  if (info.Length() < 3 || info.Length() > 4) {
+  if (info.Length() < 4) {
     ExceptionHandler::CreateAndThrow(env, "Wrong number of arguments");
     return Napi::Number::New(env, 0);
   }
 
-  if (!info[0].IsString() || !info[1].IsString() || !info[2].IsBuffer() || (info.Length() == 4 && !info[3].IsNumber())) {
+  if (!info[0].IsString() || !info[1].IsString() || !info[2].IsBuffer() || !(info[3].IsUndefined() || info[3].IsNumber())) {
     ExceptionHandler::CreateAndThrow(env, "Wrong argument types");
     return Napi::Number::New(env, 0);
   }
   auto securityPackageName = info[0].ToString();
   auto targetHost = info[1].ToString();
   auto applicationDataBuffer = info[2].As<Napi::Buffer<unsigned char>>();
-  auto flags = info.Length() == 4 ? (unsigned long)(info[3].ToNumber().Uint32Value()) : GetDefaultFlags(securityPackageName);
+  auto flags = info[3].IsNumber() ? (unsigned long)(info[3].ToNumber().Uint32Value()) : GetDefaultFlags(securityPackageName);
 
   auto ac = std::make_shared<AuthContext>();
   ac->Init(&(securityPackageName.Utf8Value()), &(targetHost.Utf8Value()), applicationDataBuffer, flags, &env);
