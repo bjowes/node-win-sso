@@ -35,11 +35,11 @@ class AuthContext {
   bool ctxHandleAllocated;
 
   public:
-  AuthContext(bool delegate);
+  AuthContext();
   virtual ~AuthContext();
   void Cleanup(Napi::Env* env);
 
-  bool Init(std::string* packageName, std::string* targetHost, Napi::Buffer<unsigned char>& applicationDataBuffer, Napi::Env* env);
+  bool Init(std::string* packageName, std::string* targetHost, Napi::Buffer<unsigned char>& applicationDataBuffer, unsigned long flags, Napi::Env* env);
   bool InitContext(Napi::Env* env);
   bool HandleResponse(Napi::Buffer<unsigned char>& inTokenBuffer, Napi::Env* env);
 

@@ -68,14 +68,14 @@ Utility method to simplify the case where an application supports multiple platf
 
 This class provides an interface to create and use an authentication context. Due to protocol details, one instance of this class should be created for each connection (socket) communicating with an endpoint where single-sign-on should be used. The class will free the resources it has allocated when it is destroyed, but it is still recommended to call the freeAuthContext() method when the instance will no longer be used.
 
-#### WinSso(securityPackage: string, targetHost: string | undefined, peerCert: PeerCertificate | undefined, delegate: boolean)
+#### WinSso(securityPackage: string, targetHost: string | undefined, peerCert: PeerCertificate | undefined, flags: number | undefined)
 
 Class constructor.
 
 * securityPackage: The name of the authentication method to use. Valid values are 'NTLM' and 'Negotiate'.
 * targetHost (optional): The FQDN of the target host. This is used to build a SPN string in the authentication message for enhanced security.
 * peerCert (optional): If the connection is http, pass undefined. If the connection is https, pass the peer certificate to add Channel Binding to the authentication message for enhanced security.
-* delegate: If the negoatiated token should support delegation of credentials. Requires Kerberos (Negotiate).
+* flags: Flags to set in the authentication context. If not set, NTML defaults to no flags, while Negotiate defaults to ISC_REQ_MUTUAL_AUTH | ISC_REQ_SEQUENCE_DETECT
 
 #### WinSso.getUserName(): string
 

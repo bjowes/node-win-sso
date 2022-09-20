@@ -26,14 +26,17 @@ export class WinSso {
    *
    * @param {string} securityPackage The name of the security package (NTLM or Negotiate)
    * @param {string | undefined} targetHost The FQDN hostname of the target (optional for NTLM, required for Kerberos)
-   * @param {PeerCertificate | undefined} peerCert The certificate of the target server (optional, for HTTPS channel binding)
-   * @param {string} delegate The tokens created should allow delegation of credentials. Only supported by Kerberos
+   * @param {PeerCertificate | undefined} peerCert The certificate of the target server
+   * (optional, for HTTPS channel binding)
+   * @param {number | undefined} flags Flags to set in the authentication context
+   * If not set, NTML defaults to no flags, while Negotiate defaults to ISC_REQ_MUTUAL_AUTH | ISC_REQ_SEQUENCE_DETECT
+   * (optional, allows customizing security features)
    */
   constructor(
     securityPackage: string,
     targetHost: string | undefined,
     peerCert: PeerCertificate | undefined,
-    delegate: boolean
+    flags: number | undefined
   ) {
     this.securityPackage = securityPackage;
     let applicationData: Buffer;
@@ -49,7 +52,7 @@ export class WinSso {
       securityPackage,
       targetHost,
       applicationData,
-      delegate
+      flags
     );
   }
 

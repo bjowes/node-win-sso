@@ -121,23 +121,30 @@ void Secur32Facade::FreeContextHandle(struct _SecHandle* ctxHandle, Napi::Env* e
   }
 }
 
+unsigned long Secur32Facade::GetDefaultFlags(std::string securityPackageName) {
+  if (securityPackageName == "Negotiate" || securityPackageName == "Kerberos") {
+    return ISC_REQ_MUTUAL_AUTH | ISC_REQ_SEQUENCE_DETECT;
+  }
+  return 0;
+}
+
 Napi::Number Secur32Facade::CreateAuthContext(const Napi::CallbackInfo& info) {
   Napi::Env env = info.Env();
-  if (info.Length() < 4) {
+  if (info.Length() >= 3 && info.Length() <= 4) {
     ExceptionHandler::CreateAndThrow(env, "Wrong number of arguments");
     return Napi::Number::New(env, 0);
   }
 
-  if (!info[0].IsString() || !info[1].IsString() || !info[2].IsBuffer() || !info[3].IsBoolean()) {
+  if (!info[0].IsString() || !info[1].IsString() || !info[2].IsBuffer() || (info.Length() == 4 && !info[3].IsNumber())) {
     ExceptionHandler::CreateAndThrow(env, "Wrong argument types");
     return Napi::Number::New(env, 0);
   }
   auto securityPackageName = info[0].ToString();
   auto targetHost = info[1].ToString();
   auto applicationDataBuffer = info[2].As<Napi::Buffer<unsigned char>>();
-  auto delegate = info[3].ToBoolean();
+  auto flags = info.Length() == 4 ? (unsigned long)(info[3].ToNumber()) : GetDefaultFlags(securityPackageName);
 
-  auto ac = std::make_shared<AuthContext>(delegate);
+  auto ac = std::make_shared<AuthContext>(flags);
   ac->Init(&(securityPackageName.Utf8Value()), &(targetHost.Utf8Value()), applicationDataBuffer, &env);
   acKey++;
   acMap[acKey] = ac;

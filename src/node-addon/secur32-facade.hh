@@ -34,6 +34,7 @@ class Secur32Facade {
    */
   static Napi::Buffer<unsigned char> CreateAuthResponse(const Napi::CallbackInfo& info);
 
+  static unsigned int GetDefaultFlags(std::string securityPackageName);
   static unsigned int GetMaxTokenLength(char* packageName, Napi::Env* env);
   static void AcquireCredentialsHandle(char* packageName, CredHandle* credHandle, SECURITY_INTEGER* lifeTime, Napi::Env* env);
   static void FreeCredentialsHandle(CredHandle* credHandle, Napi::Env* env);

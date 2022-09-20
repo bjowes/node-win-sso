@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.1 - released 2022-09-20
+
+* Make authentication context flags configurable
+
 ## 1.2.0 - released 2022-09-19
 
 * Dependency bump
