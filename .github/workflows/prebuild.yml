@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        node-version: [16]
+        node-version: [18]
         architecture: [x64, x86]
         #include:
         #  - os: windows-latest
