@@ -1,12 +1,14 @@
 import { debug } from "./utils/debug.logger";
 import { PeerCertificate } from "tls";
 import path from "path";
+import { IWinSsoAddon } from "./utils/i.win-sso-addon";
 
-let winSsoAddon: any;
+let winSsoAddon: IWinSsoAddon;
 try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   winSsoAddon = require("node-gyp-build")(path.join(__dirname, ".."));
   debug("Loaded win-sso native module");
-} catch (err) {
+} catch {
   debug("Could not load win-sso native module");
 }
 
@@ -23,12 +25,11 @@ export class WinSso {
    * Creates an authentication context for SSO.
    * This allocates memory buffers, the freeAuthContext method should be called
    * to free them (on error or after authentication is no longer needed)
-   *
-   * @param {string} securityPackage The name of the security package (NTLM or Negotiate)
-   * @param {string | undefined} targetHost The FQDN hostname of the target (optional for NTLM, required for Kerberos)
-   * @param {PeerCertificate | undefined} peerCert The certificate of the target server
+   * @param securityPackage The name of the security package (NTLM or Negotiate)
+   * @param targetHost The FQDN hostname of the target (optional for NTLM, required for Kerberos)
+   * @param peerCert The certificate of the target server
    * (optional, for HTTPS channel binding)
-   * @param {number | undefined} flags Flags to set in the authentication context
+   * @param flags Flags to set in the authentication context
    * If not set, NTML defaults to no flags, while Negotiate defaults to ISC_REQ_MUTUAL_AUTH | ISC_REQ_SEQUENCE_DETECT
    * (optional, allows customizing security features)
    */
@@ -58,8 +59,7 @@ export class WinSso {
 
   /**
    * Retrieves the username of the logged in user
-   *
-   * @returns {string} user name including domain
+   * @returns user name including domain
    */
   static getLogonUserName(): string {
     return winSsoAddon.getLogonUserName();
@@ -67,13 +67,11 @@ export class WinSso {
 
   /**
    * Transforms target TLS certificate into a channel binding application data buffer
-   *
-   * @param {PeerCertificate} peerCert Target TLS certificate
-   * @returns {Buffer} Application data buffer
+   * @param peerCert Target TLS certificate
+   * @returns Application data buffer
    */
   private getChannelBindingsApplicationData(peerCert: PeerCertificate): Buffer {
-    const cert: any = peerCert;
-    const hash = cert.fingerprint256.replace(/:/g, "");
+    const hash = peerCert.fingerprint256.replace(/:/g, "");
     const hashBuf = Buffer.from(hash, "hex");
     const tlsServerEndPoint = "tls-server-end-point:";
     const applicationDataBuffer = Buffer.alloc(
@@ -95,8 +93,7 @@ export class WinSso {
 
   /**
    * Creates an authentication request token
-   *
-   * @returns {Buffer} Raw token buffer
+   * @returns Raw token buffer
    */
   createAuthRequest(): Buffer {
     const token = winSsoAddon.createAuthRequest(this.authContextId);
@@ -109,8 +106,7 @@ export class WinSso {
 
   /**
    * Creates an authentication request header
-   *
-   * @returns {string} The www-authenticate header
+   * @returns The www-authenticate header
    */
   createAuthRequestHeader(): string {
     const header =
@@ -120,10 +116,9 @@ export class WinSso {
 
   /**
    * Creates an authentication response token
-   *
-   * @param {string} inTokenHeader The www-authentication header received from the target
+   * @param inTokenHeader The www-authentication header received from the target
    * in response to the authentication request
-   * @returns {Buffer} Raw token buffer. May be empty if Negotiate handshake  is complete.
+   * @returns Raw token buffer. May be empty if Negotiate handshake  is complete.
    */
   createAuthResponse(inTokenHeader: string): Buffer {
     debug("Received www-authentication response", inTokenHeader);
@@ -170,7 +165,6 @@ export class WinSso {
     }
   }
 
-  // eslint-disable-next-line require-jsdoc
   private isNtlmV1(type2message: Buffer): boolean {
     if (type2message.length >= 24) {
       const inTokenFlags = type2message.readInt32BE(20);
@@ -183,10 +177,9 @@ export class WinSso {
 
   /**
    * Creates an authentication response header
-   *
-   * @param {string} inTokenHeader The www-authentication header received from the target
+   * @param inTokenHeader The www-authentication header received from the target
    * in response to the authentication request
-   * @returns {string} The www-authenticate header. May be an empty string if Negotiate handshake is complete.
+   * @returns The www-authenticate header. May be an empty string if Negotiate handshake is complete.
    */
   createAuthResponseHeader(inTokenHeader: string): string {
     const tokenBuffer = this.createAuthResponse(inTokenHeader);
