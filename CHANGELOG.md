@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.3 - released 2025-05-06
+
+* Dependency bump
+
+## 1.3.2 - released 2025-01-27
+
+* Corrected packaging
+
 ## 1.3.1 - released 2025-01-27
 
 * Dependency bump
