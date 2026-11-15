@@ -30,17 +30,17 @@ jobs:
       - run: npm run native_prebuildify # Build node addon on windows
         env:
           CI: true
-      - name: Archive prebuild
-        uses: vimtor/action-zip@v1.3
-        with:
-          files: native/prebuilds/
-          dest: "win-${{ matrix.architecture }}.zip"
+#      - name: Archive prebuild
+#        uses: vimtor/action-zip@v1.3
+#        with:
+#          files: native/prebuilds/
+#          dest: "win-${{ matrix.architecture }}.zip"
       - name: Archive prebuild Node addon artifacts
         uses: actions/upload-artifact@v4
         with:
           name: prebuild-node-addon
           path: |
-            native/prebuilds/*.zip
+            native/prebuilds/*
       - name: Release
         uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
