@@ -145,7 +145,10 @@ Napi::Number Secur32Facade::CreateAuthContext(const Napi::CallbackInfo& info) {
   auto flags = info[3].IsNumber() ? (unsigned long)(info[3].ToNumber().Uint32Value()) : GetDefaultFlags(securityPackageName);
 
   auto ac = std::make_shared<AuthContext>();
-  ac->Init(&(securityPackageName.Utf8Value()), &(targetHost.Utf8Value()), applicationDataBuffer, flags, &env);
+  auto securityPackageNameUtf8 = securityPackageName.Utf8Value();
+  auto targetHostUtf8 = targetHost.Utf8Value();
+
+  ac->Init(&securityPackageNameUtf8, &targetHostUtf8, applicationDataBuffer, flags, &env);
   acKey++;
   acMap[acKey] = ac;
   return Napi::Number::New(env, acKey);
