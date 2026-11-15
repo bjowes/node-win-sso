@@ -33,7 +33,7 @@ jobs:
       - name: Archive prebuild
         uses: vimtor/action-zip@v1.3
         with:
-          files: prebuilds/
+          files: native/prebuilds/
           dest: "win-${{ matrix.architecture }}.zip"
       - name: Release
         uses: softprops/action-gh-release@v3
