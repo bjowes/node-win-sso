@@ -6,7 +6,6 @@
     "rewriteRelativeImportExtensions": true,
     "verbatimModuleSyntax": true,
     "esModuleInterop": true,
-    // "skipLibCheck": true,
     "noEmit": true,
     "module": "nodenext",
     "moduleResolution": "nodenext",

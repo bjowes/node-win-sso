@@ -6,7 +6,9 @@ import type { IWinSsoAddon } from "./utils/i.win-sso-addon.ts";
 let winSsoAddon: IWinSsoAddon;
 try {
   const { default: load } = await import("node-gyp-build");
-  winSsoAddon = load<IWinSsoAddon>(path.join(import.meta.dirname, ".."));
+
+  const currentDir = import.meta.dirname; // eslint-disable-line
+  winSsoAddon = load<IWinSsoAddon>(path.join(currentDir, ".."));
   debug("Loaded win-sso native module");
 } catch (err) {
   debug("Could not load win-sso native module", { cause: err });
@@ -25,11 +27,11 @@ export class WinSso {
    * Creates an authentication context for SSO.
    * This allocates memory buffers, the freeAuthContext method should be called
    * to free them (on error or after authentication is no longer needed)
-   * @param securityPackage The name of the security package (NTLM or Negotiate)
-   * @param targetHost The FQDN hostname of the target (optional for NTLM, required for Kerberos)
-   * @param peerCert The certificate of the target server
+   * @param  {string} securityPackage The name of the security package (NTLM or Negotiate)
+   * @param  {string|undefined} targetHost The FQDN hostname of the target (optional for NTLM, required for Kerberos)
+   * @param  {PeerCertificate|undefined} peerCert The certificate of the target server
    * (optional, for HTTPS channel binding)
-   * @param flags Flags to set in the authentication context
+   * @param {number|undefined} flags Flags to set in the authentication context
    * If not set, NTML defaults to no flags, while Negotiate defaults to ISC_REQ_MUTUAL_AUTH | ISC_REQ_SEQUENCE_DETECT
    * (optional, allows customizing security features)
    */
@@ -59,7 +61,7 @@ export class WinSso {
 
   /**
    * Retrieves the username of the logged in user
-   * @returns user name including domain
+   * @returns {string} user name including domain
    */
   static getLogonUserName(): string {
     return winSsoAddon.getLogonUserName();
@@ -67,8 +69,8 @@ export class WinSso {
 
   /**
    * Transforms target TLS certificate into a channel binding application data buffer
-   * @param peerCert Target TLS certificate
-   * @returns Application data buffer
+   * @param {PeerCertificate} peerCert Target TLS certificate
+   * @returns {Buffer} Application data buffer
    */
   private getChannelBindingsApplicationData(peerCert: PeerCertificate): Buffer {
     const hash = peerCert.fingerprint256.replace(/:/g, "");
@@ -93,7 +95,7 @@ export class WinSso {
 
   /**
    * Creates an authentication request token
-   * @returns Raw token buffer
+   * @returns {Buffer} Raw token buffer
    */
   createAuthRequest(): Buffer {
     const token = winSsoAddon.createAuthRequest(this.authContextId);
@@ -106,7 +108,7 @@ export class WinSso {
 
   /**
    * Creates an authentication request header
-   * @returns The www-authenticate header
+   * @returns {string} The www-authenticate header
    */
   createAuthRequestHeader(): string {
     const header =
@@ -116,9 +118,9 @@ export class WinSso {
 
   /**
    * Creates an authentication response token
-   * @param inTokenHeader The www-authentication header received from the target
+   * @param {string} inTokenHeader The www-authentication header received from the target
    * in response to the authentication request
-   * @returns Raw token buffer. May be empty if Negotiate handshake  is complete.
+   * @returns {Buffer} Raw token buffer. May be empty if Negotiate handshake  is complete.
    */
   createAuthResponse(inTokenHeader: string): Buffer {
     debug("Received www-authentication response", inTokenHeader);
@@ -178,9 +180,9 @@ export class WinSso {
 
   /**
    * Creates an authentication response header
-   * @param inTokenHeader The www-authentication header received from the target
+   * @param {string} inTokenHeader The www-authentication header received from the target
    * in response to the authentication request
-   * @returns The www-authenticate header. May be an empty string if Negotiate handshake is complete.
+   * @returns {string} The www-authenticate header. May be an empty string if Negotiate handshake is complete.
    */
   createAuthResponseHeader(inTokenHeader: string): string {
     const tokenBuffer = this.createAuthResponse(inTokenHeader);

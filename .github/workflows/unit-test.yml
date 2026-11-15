@@ -11,10 +11,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest]
+        os: [windows-latest, macos-latest, ubuntu-latest]
         node-version: [22, 24, 26]
-        #os: [windows-latest, macos-latest, ubuntu-latest]
-        #node-version: [22, 24, 26]
     steps:
       - uses: actions/checkout@v7
       - name: Use Node.js 22 for NAPI build

@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.0 - released 2026-11-15
+
+* Breaking - modernized to ESM module
+* Dependency bump
+
 ## 1.3.3 - released 2025-05-06
 
 * Dependency bump
