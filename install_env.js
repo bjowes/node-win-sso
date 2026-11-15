@@ -1,5 +1,5 @@
-const os = require('os');
-const spawn = require('cross-spawn');
+import * as os from 'os';
+import * as spawn from 'cross-spawn';
 
 if (os.platform() === 'win32') {
   console.log('Windows OS detected. Building native module')

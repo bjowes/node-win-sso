@@ -1,30 +1,23 @@
 name: Prebuild
 
 on:
-  push:
-    paths-ignore:
-      - "*.md"
   pull_request:
     paths-ignore:
       - "*.md"
 
 jobs:
-  unit-test:
+  prebuild:
     name: Prebuild node addon
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [windows-latest]
-        node-version: [18]
+        node-version: [22]
         architecture: [x64, x86]
-        #include:
-        #  - os: windows-latest
-        #    node-version: 16
-        #    architecture: x86
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v7
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
           architecture: ${{ matrix.architecture }}
@@ -34,12 +27,12 @@ jobs:
         env:
           CI: true
       - name: Archive prebuild
-        uses: vimtor/action-zip@v1
+        uses: vimtor/action-zip@v1.3
         with:
           files: prebuilds/
           dest: "win-${{ matrix.architecture }}.zip"
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: "*.zip"

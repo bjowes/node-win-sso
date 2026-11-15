@@ -1,6 +1,6 @@
-import { osSupported } from "../src/os-supported";
-import assert from "assert";
-import os from "os";
+import { osSupported } from "../src/os-supported.ts";
+import assert from "node:assert";
+import os from "node:os";
 
 describe("osSupported", function () {
   it("should return true only on win32", function () {
