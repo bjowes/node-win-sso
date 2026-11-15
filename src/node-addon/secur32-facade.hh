@@ -22,8 +22,8 @@ class Secur32Facade {
    */
   static Napi::String GetLogonUserName(const Napi::CallbackInfo& info);
 
-  static Napi::Number Secur32Facade::CreateAuthContext(const Napi::CallbackInfo& info);
-  static Napi::Number Secur32Facade::FreeAuthContext(const Napi::CallbackInfo& info);
+  static Napi::Number CreateAuthContext(const Napi::CallbackInfo& info);
+  static Napi::Number FreeAuthContext(const Napi::CallbackInfo& info);
   /**
    * Creates a NTLM type 1 authentication token
    */
