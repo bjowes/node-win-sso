@@ -9,8 +9,8 @@
     "test": "mocha test/**/*.spec.ts",
     "typecheck": "tsc --noEmit",
     "prebuildify": "node prebuildify_env.js",
-    "native_prebuildify": "prebuildify --napi --strip --target 22.18.0",
-    "native_build": "node-gyp-build",
+    "native_prebuildify": "prebuildify --napi --strip --target 22.18.0 --cwd native",
+    "native_build": "node-gyp-build --directory native",
     "native_build_env": "node build_env.js"
   },
   "type": "module",
@@ -28,11 +28,11 @@
   ],
   "files": [
     "dist/",
-    "build_env.js",
-    "prebuildify_env.js",
-    "binding.gyp",
+    "native/build_env.js",
+    "native/prebuildify_env.js",
+    "native/binding.gyp",
     "src/",
-    "prebuilds/"
+    "native/prebuilds/"
   ],
   "author": "Björn Weström",
   "license": "MIT",

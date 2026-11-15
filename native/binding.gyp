@@ -5,9 +5,9 @@
       "cflags!": [ "-fno-exceptions" ],
       "cflags_cc!": [ "-fno-exceptions" ],
       "sources": [
-        "src/node-addon/auth-context.cc",
-        "src/node-addon/exception-handler.cc",
-        "src/node-addon/secur32-facade.cc"
+        "node-addon/auth-context.cc",
+        "node-addon/exception-handler.cc",
+        "node-addon/secur32-facade.cc"
       ],
       "libraries": [
         "-lsecur32"
