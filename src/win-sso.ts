@@ -8,8 +8,8 @@ try {
   const nodeGypBuild = await import("node-gyp-build");
   winSsoAddon = nodeGypBuild(path.join(__dirname, ".."));
   debug("Loaded win-sso native module");
-} catch {
-  debug("Could not load win-sso native module");
+} catch (err) {
+  debug("Could not load win-sso native module", { cause: err });
 }
 
 /**

@@ -9,7 +9,7 @@
     "test": "mocha test/**/*.spec.ts",
     "typecheck": "tsc --noEmit",
     "prebuildify": "node prebuildify_env.js",
-    "native_prebuildify": "prebuildify --napi --strip --target 22",
+    "native_prebuildify": "prebuildify --napi --strip --target 22.18.0",
     "native_build": "node-gyp-build",
     "install": "node install_env.js"
   },

@@ -9,7 +9,7 @@ on:
       - "*.md"
 
 jobs:
-  unit-test:
+  prebuild:
     name: Prebuild node addon
     runs-on: ${{ matrix.os }}
     strategy:
