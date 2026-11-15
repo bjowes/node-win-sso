@@ -92,17 +92,16 @@ describe("WinSso", function () {
         // Act
         let result = winSso.createAuthRequest();
 
-        let resultStr = result.slice(0, 11).toString("base64");
-
         // Response is ASN1 encoded
         // Type: 0x60
         // 2x children, first child is type 6, length 6
         // Followed by header from:
         // gss-api.OID - 1.3.6.1.5.5.2 (SPNEGO - Simple Protected Negotiation) - 0x2b0601050502
-        let expectSpnego = Buffer.from("\x60\x81\x80\x06\x06\x2b\x06\x01\x05\x05\x02").toString(
-          "base64"
-        );
-        assert.equal(resultStr, expectSpnego);
+        let expectSpnego = Buffer.from("\x60\x81\x80\x06\x06\x2b\x06\x01\x05\x05\x02");
+
+        let resultStr = result.subarray(0, expectSpnego.length - 1);
+        console.log(resultStr);
+        assert.equal(resultStr.toString("base64"), expectSpnego.toString("base64"));
       });
     });
   });
