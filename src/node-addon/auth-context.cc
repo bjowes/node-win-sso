@@ -65,16 +65,20 @@ bool AuthContext::Init(std::string* securityPackageName, std::string* targetHost
 
 void AuthContext::SetupChannelBindings(Napi::Buffer<unsigned char>& applicationDataBuffer) {
   if (applicationDataBuffer.Length() > 0) {
+    size_t applicationDataLength = applicationDataBuffer.Length();
+    if (applicationDataLength > sizeof(channelBindings.applicationData)) {
+      applicationDataLength = sizeof(channelBindings.applicationData);
+    }
     channelBindings.secChannelBindings.dwInitiatorAddrType = 0;
     channelBindings.secChannelBindings.cbInitiatorLength = 0;
     channelBindings.secChannelBindings.dwInitiatorOffset = 0;
     channelBindings.secChannelBindings.dwAcceptorAddrType = 0;
     channelBindings.secChannelBindings.cbAcceptorLength = 0;
     channelBindings.secChannelBindings.dwAcceptorOffset = 0;
-    channelBindings.secChannelBindings.cbApplicationDataLength = applicationDataBuffer.Length();
+    channelBindings.secChannelBindings.cbApplicationDataLength = (unsigned long)applicationDataLength;
     channelBindings.secChannelBindings.dwApplicationDataOffset = 32;
-    memcpy(channelBindings.applicationData, applicationDataBuffer.Data(), applicationDataBuffer.Length());
-    channelBindingsLength = (32 + applicationDataBuffer.Length());
+    memcpy(channelBindings.applicationData, applicationDataBuffer.Data(), applicationDataLength);
+    channelBindingsLength = (unsigned long)(32 + applicationDataLength);
   }
 }
 
