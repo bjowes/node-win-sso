@@ -11,7 +11,7 @@
     "prebuildify": "node prebuildify_env.js",
     "native_prebuildify": "prebuildify --napi --strip --target 22.18.0",
     "native_build": "node-gyp-build",
-    "install": "node install_env.js"
+    "native_build_env": "node build_env.js"
   },
   "type": "module",
   "engines": {
@@ -28,7 +28,7 @@
   ],
   "files": [
     "dist/",
-    "install_env.js",
+    "build_env.js",
     "prebuildify_env.js",
     "binding.gyp",
     "src/",
