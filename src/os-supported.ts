@@ -1,4 +1,4 @@
-import os from "os";
+import os from "node:os";
 
 /**
  * Returns true if the current platform is supported by the win-sso module. Only Windows OSs are supported.

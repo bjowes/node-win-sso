@@ -1,4 +1,4 @@
-export interface IWinSsoAddon {
+interface IWinSsoAddon {
     createAuthContext(
         securityPackage: string,
         targetHost: string | undefined,
@@ -13,3 +13,5 @@ export interface IWinSsoAddon {
     createAuthRequest(authContextId: number): Buffer,
     createAuthResponse(authContextId: number, inToken: Buffer): Buffer,
 }
+
+export type { IWinSsoAddon };

@@ -1,12 +1,12 @@
-import { debug } from "./utils/debug.logger";
-import { PeerCertificate } from "tls";
-import path from "path";
-import { IWinSsoAddon } from "./utils/i.win-sso-addon";
+import { debug } from "./utils/debug.logger.ts";
+import type { PeerCertificate } from "node:tls";
+import path from "node:path";
+import type { IWinSsoAddon } from "./utils/i.win-sso-addon.ts";
 
 let winSsoAddon: IWinSsoAddon;
 try {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  winSsoAddon = require("node-gyp-build")(path.join(__dirname, ".."));
+  const nodeGypBuild = await import("node-gyp-build");
+  winSsoAddon = nodeGypBuild(path.join(__dirname, ".."));
   debug("Loaded win-sso native module");
 } catch {
   debug("Could not load win-sso native module");
@@ -157,7 +157,8 @@ export class WinSso {
           throw new Error(
             "Could not create NTLM type 3 message. Incoming type 2 message uses NTLMv1, " +
               "it is likely that the client is prevented from sending such messages. " +
-              "Update target host to use NTLMv2 (recommended) or adjust LMCompatibilityLevel on the client (insecure)"
+              "Update target host to use NTLMv2 (recommended) or adjust LMCompatibilityLevel on the client (insecure)",
+              { cause: err }
           );
         }
       }

@@ -1,11 +1,24 @@
+import js from '@eslint/js';
+import { defineConfig } from 'eslint/config';
+import tseslint from 'typescript-eslint';
+import n from "eslint-plugin-n"
+
+export default defineConfig({
+  plugins: {n},
+  files: ['**/*.{js,ts}'],
+  extends: [js.configs.recommended, tseslint.configs.recommended, 'n/recommended-module'],
+});
+
+/*
 import pluginJs from "@eslint/js";
 import jsdoc from "eslint-plugin-jsdoc";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
 export default [
-  {
-    files: ["**/*.{js,mjs,cjs,ts}"],
+  { */
+    //files: ["**/*.{js,mjs,cjs,ts}"],
+    /*
     plugins: { jsdoc },
     rules: {
       "jsdoc/require-description": "warn",
@@ -28,3 +41,4 @@ export default [
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
 ];
+*/
