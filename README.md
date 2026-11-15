@@ -109,6 +109,10 @@ This method throws if the response could not be created. One such scenario is if
 
 Releases all allocated resources for the authorization context. Resources are also released when the instance is destroyed, but it is still recommended to call this method when the context is no longer required, such as when an error ocurred or when the socket was closed.
 
-### Credits
+## Developer notes
+
+Due to security improvements in npm the install step has been removed. The package uses prebuildify which means that the required Node addon is incldued automatically in the npm package for downstream use. However, when working with this package directly the Node addon is no longer built automatically on `npm install` - now an additional call to `npm run native_build` is required.
+
+## Credits
 
 The idea of implementation is based on the work of @snowytoxa, who presented the concept of retrieving NTLM tokens for the current user without any admin privileges in 2014. The source for his project [selfhash](https://github.com/snowytoxa/selfhash/) shortened the development time significantly.
