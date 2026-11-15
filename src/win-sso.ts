@@ -6,7 +6,7 @@ import type { IWinSsoAddon } from "./utils/i.win-sso-addon.ts";
 let winSsoAddon: IWinSsoAddon;
 try {
   const nodeGypBuild = await import("node-gyp-build");
-  winSsoAddon = nodeGypBuild(path.join(__dirname, ".."));
+  winSsoAddon = nodeGypBuild(path.join(import.meta.dirname, ".."));
   debug("Loaded win-sso native module");
 } catch (err) {
   debug("Could not load win-sso native module", { cause: err });
