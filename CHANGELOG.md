@@ -2,7 +2,10 @@
 
 ## 2.0 - released 2026-11-15
 
-* Breaking - modernized to ESM module
+* BREAKING - Modernized to ESM module
+* BREAKING - Requires NodeJs >= 22.18  
+* Use native typescript
+* fix: bound the channel bindings application data copy (thanks @MinhyukHong)
 * Dependency bump
 
 ## 1.3.3 - released 2025-05-06

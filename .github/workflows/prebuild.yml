@@ -1,6 +1,9 @@
 name: Prebuild
 
 on:
+  push:
+    branches:
+      - master
   pull_request:
     paths-ignore:
       - "*.md"
