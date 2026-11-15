@@ -8,7 +8,7 @@ try {
   const { default: load } = await import("node-gyp-build");
 
   const currentDir = import.meta.dirname; // eslint-disable-line
-  winSsoAddon = load<IWinSsoAddon>(path.join(currentDir, ".."));
+  winSsoAddon = load<IWinSsoAddon>(path.join(currentDir, "..", "native"));
   debug("Loaded win-sso native module");
 } catch (err) {
   debug("Could not load win-sso native module", { cause: err });

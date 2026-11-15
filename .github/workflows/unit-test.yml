@@ -24,7 +24,11 @@ jobs:
           node-version: 22
       - run: npm ci
       - run: npm run build
-      - run: npm run native_build_env # Build node addon on windows
+      #- run: npm run native_build_env # Build node addon on windows
+      - run: npm run native_prebuildify # Build node addon on windows
+        env:
+          CI: true
+
       - name: Use Node.js ${{ matrix.node-version }} for test
         uses: actions/setup-node@v7
         with:
