@@ -8,10 +8,10 @@
     "lint": "eslint src",
     "test": "mocha test/**/*.spec.ts",
     "typecheck": "tsc --noEmit",
-    "prebuildify": "node prebuildify_env.js",
+    "prebuildify": "node native/prebuildify_env.js",
     "native_prebuildify": "prebuildify --napi --strip --target 22.18.0 --cwd native",
     "native_build": "node-gyp-build --directory native",
-    "native_build_env": "node build_env.js"
+    "native_build_env": "node native/build_env.js"
   },
   "type": "module",
   "engines": {
