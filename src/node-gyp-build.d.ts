@@ -1,5 +1,5 @@
-//import type { IWinSsoAddon } from "./utils/i.win-sso-addon.ts";
+declare module "node-gyp-build" {
+  function load<T = unknown>(directory: string): T;
 
-declare module 'node-gyp-build'; /* {
-  export function load(path: string): IWinSsoAddon;
-}*/
+  export default load;
+}
