@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        node-version: [22]
+        node-version: [22, 24, 26]
         #os: [windows-latest, macos-latest, ubuntu-latest]
         #node-version: [22, 24, 26]
     steps:
@@ -30,4 +30,4 @@ jobs:
       - run: npm run test
         env:
           CI: true
-          DEBUG: 'win-sso'
+          #DEBUG: 'win-sso'

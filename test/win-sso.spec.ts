@@ -1,8 +1,6 @@
 import { WinSso } from "../src/win-sso.ts";
 import assert from "node:assert";
 import os from "node:os";
-//import ASN1 from 'asn1-parser';
-//const ASN1 = await import("asn1-parser");
 
 describe("WinSso", function () {
   before("Check OS", function () {
@@ -94,23 +92,17 @@ describe("WinSso", function () {
         // Act
         let result = winSso.createAuthRequest();
 
-        let dec = result;
-        let resultStr = result.slice(0, 32).toString("base64");
-        console.log("Neg auth request result");
-        console.log(resultStr);
-        // Assert
-        //let dec = ASN1.ASN1.parse(result);
-        /*
-        assert.equal(dec.type, 0x60);
-        assert.equal(dec.children.length, 2);
-        assert.equal(dec.children[0].type, 6);
-        assert.equal(dec.children[0].length, 6);
+        let resultStr = result.slice(0, 11).toString("base64");
+
+        // Response is ASN1 encoded
+        // Type: 0x60
+        // 2x children, first child is type 6, length 6
+        // Followed by header from:
         // gss-api.OID - 1.3.6.1.5.5.2 (SPNEGO - Simple Protected Negotiation) - 0x2b0601050502
-        let expectSpnego = Buffer.from("\x2b\x06\x01\x05\x05\x02").toString(
+        let expectSpnego = Buffer.from("\x60\x81\x80\x06\x06\x2b\x06\x01\x05\x05\x02").toString(
           "base64"
         );
-        assert.equal(dec.children[0].value.toString("base64"), expectSpnego);
-        */
+        assert.equal(resultStr, expectSpnego);
       });
     });
   });
