@@ -11,5 +11,5 @@
     "moduleResolution": "nodenext",
     "types": ["node", "mocha"]
   },
-  "include": ["./src", "./test"]
+  "include": ["./src", "./test", "./native"]
 }
