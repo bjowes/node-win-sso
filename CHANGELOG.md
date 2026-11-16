@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.0 - released 2026-11-16
+
+* Restructured node addon build process which reduces dependencies and avoids using install hooks. This improves compatibility with npm 12 and reduces risks of Supply Chain attacks. Resolves #21 (thanks @alexsch01 for the heads up)
+* Dependency bump
+
 ## 1.3.3 - released 2025-05-06
 
 * Dependency bump
