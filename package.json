@@ -9,7 +9,8 @@
     "test": "mocha test/**/*.spec.ts",
     "typecheck": "tsc --noEmit",
     "prebuildify": "node native/prebuildify_env.ts",
-    "native_prebuildify": "prebuildify --napi --strip --target 22.22.2 --cwd native"
+    "native_prebuildify": "prebuildify --napi --strip --target 22.22.2 --cwd native",
+    "prepare": "tsc -p tsconfig.publish.json"
   },
   "type": "module",
   "engines": {
