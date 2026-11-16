@@ -5,8 +5,9 @@ import { IWinSsoAddon } from "./utils/i.win-sso-addon";
 
 let winSsoAddon: IWinSsoAddon;
 try {
+  const currentDir = import.meta.dirname; // eslint-disable-line
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  winSsoAddon = require("node-gyp-build")(path.join(__dirname, ".."));
+  winSsoAddon = require("node-gyp-build")(path.join(currentDir, "..", "native"));
   debug("Loaded win-sso native module");
 } catch {
   debug("Could not load win-sso native module");

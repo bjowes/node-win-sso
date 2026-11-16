@@ -7,13 +7,11 @@
     "build": "shx rm -rf dist && tsc",
     "lint": "eslint src",
     "test": "mocha --require ./test/ts.hooks.js test/**/*.spec.ts",
-    "prebuildify": "node prebuildify_env.js",
-    "native_prebuildify": "prebuildify --napi --strip --target 18.18.0",
-    "native_build": "node-gyp-build",
-    "install": "node install_env.js"
+    "prebuildify": "node native/prebuildify_env.ts",
+    "native_prebuildify": "prebuildify --napi --strip --target 22.18.0 --cwd native"
   },
   "engines": {
-    "node": "^18.18.0 || ^20.9.0 || >=21.1.0"
+    "node": ">=22.18.0 || >=24.0.0 || >=26.0.0"
   },
   "repository": {
     "type": "git",
@@ -26,11 +24,8 @@
   ],
   "files": [
     "dist/",
-    "install_env.js",
-    "prebuildify_env.js",
-    "binding.gyp",
     "src/",
-    "prebuilds/"
+    "native/prebuilds/"
   ],
   "author": "Björn Weström",
   "license": "MIT",
@@ -39,11 +34,7 @@
   },
   "homepage": "https://github.com/bjowes/node-win-sso#readme",
   "dependencies": {
-    "bindings": "^1.5.0",
-    "cross-spawn": "^7.0.6",
-    "debug": "^4.4.0",
-    "node-gyp": "^11.2.0",
-    "node-gyp-build": "^4.8.4"
+    "debug": "^4.4.0"
   },
   "devDependencies": {
     "@types/debug": "^4.1.12",
@@ -53,6 +44,10 @@
     "eslint": "^9.26.0",
     "eslint-plugin-jsdoc": "^50.6.11",
     "eslint-plugin-node": "^11.1.0",
+    "bindings": "^1.5.0",
+    "cross-spawn": "^7.0.6",
+    "node-gyp": "^11.2.0",
+    "node-gyp-build": "^4.8.4",
     "mocha": "^11.2.2",
     "node-addon-api": "^8.3.1",
     "prebuildify": "^6.0.1",

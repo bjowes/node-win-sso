@@ -15,31 +15,28 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        node-version: [18]
+        node-version: [22]
         architecture: [x64, x86]
         #include:
         #  - os: windows-latest
         #    node-version: 16
         #    architecture: x86
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v7
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
           architecture: ${{ matrix.architecture }}
       - run: npm ci
       - run: npm run build
-      - run: npm run native_prebuildify
+      - run: npm run native_prebuildify # Build node addon on windows
         env:
           CI: true
-      - name: Archive prebuild
-        uses: vimtor/action-zip@v1
+      - name: Archive prebuild Node addon artifacts
+        uses: actions/upload-artifact@v4
         with:
-          files: prebuilds/
-          dest: "win-${{ matrix.architecture }}.zip"
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: "*.zip"
+          name: prebuild-node-addon-win-${{ matrix.architecture }}
+          path: |
+            native/prebuilds/*
+
